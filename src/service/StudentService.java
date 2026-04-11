@@ -1,35 +1,71 @@
 package service;
 
-import java.util.ArrayList;
 import model.Student;
-import persistance.StudentFileHandler;
+import datastructures.CustomHashMap;
+import datastructures.CustomArrayList;
+import persistence.DataPersistence;
 
 public class StudentService {
+    private CustomHashMap<String, Student> students;
+    private static StudentService instance;
 
-    private ArrayList<Student> students;
-
-    public StudentService() {
-        students = StudentFileHandler.loadStudents();
+    private StudentService() {
+        students = new CustomHashMap<>();
     }
 
-    // 🔍 Find student by number
-    public Student findStudent(String studentNumber) {
-        for (Student s : students) {
-            if (s.getStudentNumber().equals(studentNumber)) {
-                return s;
+    public static StudentService getInstance() {
+        if (instance == null) {
+            instance = new StudentService();
+        }
+        return instance;
+    }
+
+    public void addStudent(Student student) {
+        students.put(student.getId(), student);
+        LoginService.getInstance().registerStudent(student);
+        DataPersistence.saveStudents(students);
+    }
+
+    public Student getStudent(String studentId) {
+        return students.get(studentId);
+    }
+
+    public void updateStudent(Student student) {
+        students.put(student.getId(), student);
+        DataPersistence.saveStudents(students);
+    }
+
+    public boolean deleteStudent(String studentId) {
+        Student removed = students.remove(studentId);
+        if (removed != null) {
+            LoginService.getInstance().unregisterStudent(studentId);
+            DataPersistence.saveStudents(students);
+            return true;
+        }
+        return false;
+    }
+
+    public CustomArrayList<Student> getAllStudents() {
+        return students.values();
+    }
+
+    public CustomArrayList<Student> getStudentsByDepartment(String department) {
+        CustomArrayList<Student> result = new CustomArrayList<>();
+        CustomArrayList<Student> allStudents = students.values();
+
+        for (Student student : allStudents) {
+            if (student.getDepartment().equalsIgnoreCase(department)) {
+                result.add(student);
             }
         }
-        return null;
+        return result;
     }
 
-    // 🔐 Login logic
-    public Student login(String studentNumber, String password) {
-        Student student = findStudent(studentNumber);
+    public void setStudents(CustomHashMap<String, Student> loadedStudents) {
+        this.students = loadedStudents;
+    }
 
-        if (student != null && student.getPassword().equals(password)) {
-            return student;
-        }
-
-        return null;
+    public CustomHashMap<String, Student> getStudentsMap() {
+        return students;
     }
 }

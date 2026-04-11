@@ -1,0 +1,1 @@
+{"courses":[{"courseCode":"CS101","courseName":"Introduction to Programming","instructor":"Dr. Smith","credits":4,"maxCapacity":40,"schedule":"Mon/Wed 10:00","enrolledStudents":[]},{"courseCode":"MA201","courseName":"Linear Algebra","instructor":"Dr. Jones","credits":3,"maxCapacity":35,"schedule":"Tue/Thu 14:00","enrolledStudents":[]}]}

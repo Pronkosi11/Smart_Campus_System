@@ -1,0 +1,1 @@
+{"books":[{"bookId":"B002","title":"Algorithms","author":"Sedgewick","isbn":"978-0321573513","totalCopies":2,"availableCopies":2,"waitingList":[]},{"bookId":"B001","title":"Clean Code","author":"Robert Martin","isbn":"978-0132350884","totalCopies":3,"availableCopies":3,"waitingList":[]}]}
