@@ -1,8 +1,15 @@
 package ui;
-import java.util.*;
+
+import java.util.Scanner;
+import model.Student;
+import persistance.StudentFileHandler;
+import service.StudentService;
+import model.Student;
 
 public class MainMenu {
-    private Scanner input = new Scanner(System.in);
+
+    private Scanner scanner = new Scanner(System.in);
+    private StudentService studentService = new StudentService();
 
     public void start() {
         int choice;
@@ -14,24 +21,63 @@ public class MainMenu {
             System.out.println("3. Exit");
             System.out.print("Choose option: ");
 
-            choice = input.nextInt();
-            input.nextLine();
+            choice = scanner.nextInt();
+            scanner.nextLine(); // clear buffer
 
             switch (choice) {
                 case 1:
-                    System.out.println("You selected Register Student");
+                    System.out.print("Student Number: ");
+                    String number = scanner.nextLine();
+
+                    System.out.print("Name: ");
+                    String name = scanner.nextLine();
+
+                    System.out.print("Surname: ");
+                    String surname = scanner.nextLine();
+
+                    System.out.print("Password: ");
+                    String password = scanner.nextLine();
+
+                    Student student = new Student(number, name, surname, password);
+                    StudentFileHandler.saveStudent(student);
+
+                    System.out.println("Student registered successfully!");
                     break;
                 case 2:
-                    System.out.println("You selected login");
+                    System.out.print("Student Number: ");
+                    String loginNumber = scanner.nextLine();
+
+                    System.out.print("Password: ");
+                    String loginPassword = scanner.nextLine();
+
+                    Student loggedIn = studentService.login(loginNumber, loginPassword);
+
+                    if (loggedIn != null) {
+                        System.out.println("Login successful! Welcome " + loginNumber);
+
+                        // 👉 go to student menu (next step)
+                        //studentMenu(loggedIn);
+
+                    } else {
+                        System.out.println("Invalid student number or password!");
+                    }
                     break;
                 case 3:
-                    System.out.println("You exited the program");
+                    System.out.println("Hostel module coming soon...");
                     break;
-                default :
-                    System.out.println("Invalid option. Please try again.");
+                case 4:
+                    System.out.println("Help Desk module coming soon...");
                     break;
+                case 5:
+                    System.out.println("Events module coming soon...");
+                    break;
+                case 6:
+                    System.out.println("Logging out...");
+                    break;
+                default:
+                    System.out.println("Invalid option!");
             }
 
-        } while (choice != 3);
+        } while (choice != 6);
     }
 }
