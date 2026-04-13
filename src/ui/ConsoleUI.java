@@ -38,11 +38,13 @@ public class ConsoleUI {
     }
 
     private void printMainMenu() {
-        System.out.println("\n===== SMART CAMPUS SYSTEM =====");
+        System.out.println();
+        printHeader("SMART CAMPUS MANAGEMENT SYSTEM");
         System.out.println("1. Login as Admin");
         System.out.println("2. Login as Student");
-        System.out.println("3. Register new student");
+        System.out.println("3. Register New Student");
         System.out.println("4. Exit");
+        printDivider();
     }
 
     private void handleLoginAsAdmin() {
@@ -109,59 +111,45 @@ public class ConsoleUI {
     private void adminMenu() {
         int c;
         do {
-            System.out.println("\n===== ADMIN MENU =====");
-            System.out.println("1. List all students");
-            System.out.println("2. Delete student by ID");
-            System.out.println("3. List / add / remove courses");
-            System.out.println("4. List / add books");
-            System.out.println("5. List / add hostel rooms");
-            System.out.println("6. Help desk: view queue & resolve next");
-            System.out.println("7. Events: list / add sample");
-            System.out.println("8. Logout");
-            c = readInt("Choose: ", 1, 8);
+            printAdminDashboard();
+            c = readInt("Choose option: ", 1, 7);
             switch (c) {
                 case 1:
-                    listStudentsAdmin();
+                    showNotImplemented("Manage Students");
                     break;
                 case 2:
-                    deleteStudentAdmin();
-                    break;
-                case 3:
                     adminCourses();
                     break;
-                case 8:
+                case 3:
+                    showNotImplemented("Manage Library");
+                    break;
+                case 4:
+                    showNotImplemented("Manage Hostels");
+                    break;
+                case 5:
+                    showNotImplemented("View Help Desk Tickets");
+                    break;
+                case 6:
+                    showNotImplemented("Manage Events");
+                    break;
+                case 7:
                     System.out.println("Logging out...");
                     break;
                 default:
                     break;
             }
-        } while (c != 8);
-    }
-
-    private void listStudentsAdmin() {
-        CustomArrayList<Student> list = StudentService.getInstance().getAllStudents();
-        if (list.isEmpty()) {
-            System.out.println("No students.");
-            return;
-        }
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println(list.get(i));
-        }
-    }
-
-    private void deleteStudentAdmin() {
-        System.out.print("Student ID to delete: ");
-        String id = scanner.nextLine().trim();
-        if (StudentService.getInstance().deleteStudent(id)) {
-            System.out.println("Deleted.");
-        } else {
-            System.out.println("Student not found.");
-        }
+        } while (c != 7);
     }
 
     private void adminCourses() {
-        System.out.println("1) List  2) Add  3) Remove");
-        int a = readInt("Sub-option: ", 1, 3);
+        System.out.println();
+        printHeader("MANAGE COURSES");
+        System.out.println("1. List Courses");
+        System.out.println("2. Add Course");
+        System.out.println("3. Remove Course");
+        System.out.println("4. Back");
+        printDivider();
+        int a = readInt("Choose option: ", 1, 4);
         CourseService cs = CourseService.getInstance();
         if (a == 1) {
             CustomArrayList<Course> all = cs.getAllCourses();
@@ -169,7 +157,7 @@ public class ConsoleUI {
                 System.out.println("No courses.");
             } else {
                 for (int i = 0; i < all.size(); i++) {
-                    System.out.println(all.get(i));
+                    System.out.println((i + 1) + ". " + all.get(i));
                 }
             }
         } else if (a == 2) {
@@ -188,7 +176,7 @@ public class ConsoleUI {
             }
             cs.addCourse(new Course(code, name, inst, credits, cap, sched));
             System.out.println("Course added.");
-        } else {
+        } else if (a == 3) {
             System.out.print("Course code to remove: ");
             String code = scanner.nextLine().trim();
             if (cs.deleteCourse(code)) {
@@ -201,39 +189,78 @@ public class ConsoleUI {
     private void studentMenu(Student student) {
         int c;
         do {
-            System.out.println("\n===== STUDENT MENU (" + student.getName() + ") =====");
-            System.out.println("1. Courses (list & register)");
-            System.out.println("2. Library (list & borrow / return)");
-            System.out.println("3. Hostel (rooms & allocate)");
-            System.out.println("4. Help desk (submit ticket)");
-            System.out.println("5. Events (list & register)");
-            System.out.println("6. Logout");
-            c = readInt("Choose: ", 1, 6);
+            printStudentPortal();
+            c = readInt("Choose option: ", 1, 7);
             switch (c) {
                 case 1:
+                    viewStudentProfile(student);
+                    break;
+                case 2:
                     studentCourses(student);
                     break;
+                case 3:
+                    showNotImplemented("Library Services");
+                    break;
+                case 4:
+                    showNotImplemented("Hostel Application");
+                    break;
+                case 5:
+                    showNotImplemented("Help Desk Ticket");
+                    break;
                 case 6:
+                    showNotImplemented("Event Booking");
+                    break;
+                case 7:
                     System.out.println("Logging out...");
                     break;
                 default:
                     break;
             }
-        } while (c != 6);
+        } while (c != 7);
     }
 
     private void studentCourses(Student student) {
         CourseService cs = CourseService.getInstance();
-        CustomArrayList<Course> courses = cs.getAllCourses();
+        CustomArrayList<Course> courses = cs.getAvailableCourses();
+        CustomArrayList<String> enrolledCodes = student.getEnrolledCourses();
+
+        System.out.println();
+        printHeader("COURSE REGISTRATION");
+
+        System.out.println("Available Courses:");
         if (courses.isEmpty()) {
             System.out.println("No courses available.");
+        } else {
+            for (int i = 0; i < courses.size(); i++) {
+                Course c = courses.get(i);
+                System.out.println((i + 1) + ". " + c + " | Credits: " + c.getCredits() + " | " + c.getSchedule());
+            }
+        }
+
+        System.out.println("\nMy Registered Courses:");
+        if (enrolledCodes.isEmpty()) {
+            System.out.println("None");
+        } else {
+            for (int i = 0; i < enrolledCodes.size(); i++) {
+                String code = enrolledCodes.get(i);
+                Course course = cs.getCourse(code);
+                if (course != null) {
+                    System.out.println((i + 1) + ". " + course);
+                } else {
+                    System.out.println((i + 1) + ". " + code);
+                }
+            }
+        }
+
+        System.out.println("\n1. Register for a Course");
+        System.out.println("2. Drop a Course");
+        System.out.println("3. Back");
+        printDivider();
+        int a = readInt("Choose option: ", 1, 3);
+        if (a == 3) {
             return;
         }
-        for (int i = 0; i < courses.size(); i++) {
-            System.out.println(courses.get(i));
-        }
-        System.out.println("1) Register  2) Drop");
-        int a = readInt("Choice: ", 1, 2);
+
         System.out.print("Course code: ");
         String code = scanner.nextLine().trim();
         if (a == 1) {
@@ -249,6 +276,63 @@ public class ConsoleUI {
                 System.out.println("Could not drop.");
             }
         }
+    }
+
+    private void viewStudentProfile(Student student) {
+        System.out.println();
+        printHeader("MY PROFILE");
+        System.out.println("ID         : " + student.getId());
+        System.out.println("Name       : " + student.getName());
+        System.out.println("Department : " + student.getDepartment());
+        System.out.println("Year       : " + student.getYear());
+        System.out.println("Email      : " + student.getEmail());
+        System.out.println("Phone      : " + student.getPhone());
+        System.out.println("Courses    : " + student.getEnrolledCourses().size());
+        printDivider();
+    }
+
+    private void printAdminDashboard() {
+        System.out.println();
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║           ADMIN DASHBOARD             ║");
+        System.out.println("╠════════════════════════════════════════╣");
+        System.out.println("║  1. Manage Students                   ║");
+        System.out.println("║  2. Manage Courses                    ║");
+        System.out.println("║  3. Manage Library                    ║");
+        System.out.println("║  4. Manage Hostels                    ║");
+        System.out.println("║  5. View Help Desk Tickets            ║");
+        System.out.println("║  6. Manage Events                     ║");
+        System.out.println("║  7. Logout                            ║");
+        System.out.println("╚════════════════════════════════════════╝");
+    }
+
+    private void printStudentPortal() {
+        System.out.println();
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║           STUDENT PORTAL              ║");
+        System.out.println("╠════════════════════════════════════════╣");
+        System.out.println("║  1. View My Profile                   ║");
+        System.out.println("║  2. Course Registration               ║");
+        System.out.println("║  3. Library Services                  ║");
+        System.out.println("║  4. Hostel Application                ║");
+        System.out.println("║  5. Submit Help Desk Ticket           ║");
+        System.out.println("║  6. Event Booking                     ║");
+        System.out.println("║  7. Logout                            ║");
+        System.out.println("╚════════════════════════════════════════╝");
+    }
+
+    private void printHeader(String title) {
+        System.out.println("========================================");
+        System.out.println("  " + title);
+        System.out.println("========================================");
+    }
+
+    private void printDivider() {
+        System.out.println("----------------------------------------");
+    }
+
+    private void showNotImplemented(String moduleName) {
+        System.out.println(moduleName + " is not implemented in this phase.");
     }
 
     private int readInt(String prompt, int min, int max) {
