@@ -409,25 +409,25 @@ public class EventBookingModule {
 
 ## 8. Rollout Plan
 ### 8.1 Development Phases
-#### Phase 1: Requirements & Design (Week 1)
+#### Phase 1: Requirements & Design 
 - [ ] Finalize module specifications
 - [ ] Complete data structure selection
 - [ ] Design class diagrams
 - [ ] Create detailed ERD
 - [ ] Assign team responsibilities
-#### Phase 2: Core Architecture (Week 2)
+#### Phase 2: Core Architecture 
 - [ ] Implement package structure
 - [ ] Create Main.java entry point
 - [ ] Implement User, Admin, Student classes
 - [ ] Build LoginManager
 - [ ] Develop Menu system
 - [ ] Create DataStore singleton
-#### Phase 3: Module Implementation (Weeks 3-4)
+#### Phase 3: Module Implementation 
 - [ ] **Person 1**: Main class, login, menus, DataStore
 - [ ] **Person 2**: StudentRecordsModule, CourseRegistrationModule
 - [ ] **Person 3**: LibraryModule, HostelModule, HelpDeskModule
 - [ ] **Person 4**: EventBookingModule, Custom data structures
-#### Phase 4: Testing & Documentation (Week 5)
+#### Phase 4: Testing & Documentation 
 - [ ] Unit test all components
 - [ ] Integration testing
 - [ ] Bug fixes and refinements
@@ -436,10 +436,10 @@ public class EventBookingModule {
 ### 8.2 Team Assignment Matrix
 | Team Member | Primary Responsibility | Data Structures Used |
 | ----- | ----- | ----- |
-| **Person 1** | Main, Login, Menu, DataStore | All (integration) |
-| **Person 2** | Student Records, Course Registration | CustomArrayList, CustomHashMap |
-| **Person 3** | Library, Hostel, Help Desk | CustomQueue, CustomStack, CustomTreeMap |
-| **Person 4** | Event Booking, Custom DS Implementation | CustomLinkedList, CustomTreeMap |
+| **Group 1** | Main, Login, Menu, DataStore | All (integration) |
+| **Group 2** | Student Records, Course Registration | CustomArrayList, CustomHashMap |
+| **Group 3** | Library, Hostel, Help Desk | CustomQueue, CustomStack, CustomTreeMap |
+| **Group 4** | Event Booking, Custom DS Implementation | CustomLinkedList, CustomTreeMap |
 ### 8.3 Deliverables Checklist
 - [ ] Complete source code with all modules
 - [ ] Custom data structure implementations with documentation
