@@ -76,13 +76,9 @@ This document outlines the technical architecture, data models, implementation s
 ### 3.2 Package Structure
 ```
 src/
-├── main/
-│   ├── Main.java                         // Application entry point
-│   ├── User.java                         // Abstract base user class
-│   ├── Admin.java                        // Admin user implementation
-│   ├── Student.java                      // Student user implementation
-│   ├── LoginManager.java                 // Authentication logic
-│   ├── Menu.java                         // Menu display and routing
+├── Main.java
+│   ├── ui                         
+│   |   └──ConsoleUI.java                // Application entry point
 │   │
 │   ├── modules/
 │   │   ├── StudentRecordsModule.java     // Student data management
