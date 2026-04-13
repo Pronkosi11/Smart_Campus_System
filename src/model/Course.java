@@ -68,7 +68,7 @@ public class Course {
         return false;
     }
 
-    /** Restores enrollment from JSON (does not re-check capacity). */
+    /* Restores enrollment from JSON (does not re-check capacity). */
     public void loadEnrolledFromPersistence(CustomArrayList<String> ids) {
         enrolledStudents.clear();
         enrolledCount = 0;
