@@ -27,86 +27,86 @@ This document outlines the technical architecture, data models, implementation s
 ---
 
 ## 3. Architecture
-### 3.1 High-Level Architecture
+### 3.1 High-Level Architecture (Current + Planned)
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         PRESENTATION LAYER                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────────┐ │
-│  │  Main.java  │  │  Menu.java  │  │     ConsoleUtils.java       │ │
-│  └─────────────┘  └─────────────┘  └─────────────────────────────┘ │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────────┐  │
+│  │  Main.java  │  │ConsoleUI.java│ │      Menu Rendering         │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       AUTHENTICATION LAYER                          │
-│  ┌─────────────────┐  ┌──────────┐  ┌─────────┐  ┌───────────────┐ │
-│  │ LoginManager    │  │  User    │  │  Admin  │  │    Student    │ │
-│  └─────────────────┘  └──────────┘  └─────────┘  └───────────────┘ │
+│  ┌─────────────────┐  ┌──────────┐  ┌─────────┐  ┌───────────────┐  │
+│  │ LoginService    │  │  User    │  │  Admin  │  │    Student    │  │
+│  └─────────────────┘  └──────────┘  └─────────┘  └───────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         BUSINESS LAYER                              │
-│  ┌────────────────────┐  ┌────────────────────────────────────────┐│
-│  │ StudentRecords     │  │ CourseRegistrationModule               ││
-│  │ Module             │  │                                        ││
-│  └────────────────────┘  └────────────────────────────────────────┘│
-│  ┌────────────────────┐  ┌────────────────────────────────────────┐│
-│  │ LibraryModule      │  │ HostelModule                          ││
-│  └────────────────────┘  └────────────────────────────────────────┘│
-│  ┌────────────────────┐  ┌────────────────────────────────────────┐│
-│  │ HelpDeskModule     │  │ EventBookingModule                    ││
-│  └────────────────────┘  └────────────────────────────────────────┘│
+│  ┌────────────────────┐  ┌────────────────────────────────────────┐ │
+│  │ StudentService     │  │ CourseService                          │ │
+│  │ (Implemented)      │  │ (Implemented)                          │ │
+│  └────────────────────┘  └────────────────────────────────────────┘ │
+│  ┌────────────────────┐  ┌────────────────────────────────────────┐ │
+│  │ LibraryModule      │  │ HostelModule                           │ │
+│  │ (Planned)          │  │ (Planned)                              │ │
+│  └────────────────────┘  └────────────────────────────────────────┘ │
+│  ┌────────────────────┐  ┌────────────────────────────────────────┐ │
+│  │ HelpDeskModule     │  │ EventBookingModule                     │ │
+│  │ (Planned)          │  │ (Planned)                              │ │
+│  └────────────────────┘  └────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────┘
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                          DATA LAYER                                 │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                    DataStore.java (Singleton)                │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│  ┌────────────────┐  ┌────────────────┐  ┌────────────────────┐   │
-│  │ CustomArrayList│  │ CustomHashMap  │  │ CustomTreeMap      │   │
-│  └────────────────┘  └────────────────┘  └────────────────────┘   │
-│  ┌────────────────┐  ┌────────────────┐  ┌────────────────────┐   │
-│  │ CustomLinkedList│ │ CustomQueue    │  │ CustomStack        │   │
-│  └────────────────┘  └────────────────┘  └────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │    DataPersistence + JsonFileHandler (Implemented)          │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│  ┌────────────────┐  ┌────────────────┐                             │
+│  │ CustomArrayList│  │ CustomHashMap  │                             │
+│  └────────────────┘  └────────────────┘                             │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────────┐     │
+│  │CustomLinkedList│  │ CustomQueue    │  │ CustomStack        │     │
+│  └────────────────┘  └────────────────┘  └────────────────────┘     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 ### 3.2 Package Structure
 ```
 src/
-├── Main.java
-│   ├── ui                         
-│   |   └──ConsoleUI.java                // Application entry point
-│   │
-│   ├── modules/
-│   │   ├── StudentRecordsModule.java     // Student data management
-│   │   ├── CourseRegistrationModule.java // Course enrollment handling
-│   │   ├── LibraryModule.java            // Book borrowing system
-│   │   ├── HostelModule.java             // Room allocation system
-│   │   ├── HelpDeskModule.java           // Ticket management
-│   │   └── EventBookingModule.java       // Event registration
-│   │
-│   ├── datastructures/
-│   │   ├── CustomArrayList.java          // Dynamic array implementation
-│   │   ├── CustomLinkedList.java         // Linked list implementation
-│   │   ├── CustomHashMap.java            // Hash table implementation
-│   │   ├── CustomTreeMap.java            // BST-based sorted map
-│   │   ├── CustomQueue.java              // FIFO queue implementation
-│   │   └── CustomStack.java              // LIFO stack implementation
-│   │
-│   ├── models/
-│   │   ├── StudentRecord.java            // Student entity
-│   │   ├── Course.java                   // Course entity
-│   │   ├── LibraryBook.java              // Book entity
-│   │   ├── HostelRoom.java               // Room entity
-│   │   ├── Ticket.java                   // Help-desk ticket entity
-│   │   └── Event.java                    // Event entity
-│   │
-│   └── utils/
-│       ├── ConsoleUtils.java             // I/O helper methods
-│       └── DataStore.java                // Centralized data storage
+├── Main.java                             // Application entry point (implemented)
+├── ui/
+│   └── ConsoleUI.java                    // Menu-driven console interface (implemented)
+├── service/
+│   ├── LoginService.java                 // Authentication logic (implemented)
+│   ├── StudentService.java               // Student management operations (implemented)
+│   ├── CourseService.java                // Course + registration operations (implemented)
+│   ├── LibraryService.java               // Library business logic (planned)
+│   ├── HostelService.java                // Hostel business logic (planned)
+│   ├── HelpDeskService.java              // Help desk business logic (planned)
+│   └── EventService.java                 // Event booking business logic (planned)
+├── model/
+│   ├── User.java                         // Abstract base user (implemented)
+│   ├── Admin.java                        // Admin entity (implemented)
+│   ├── Student.java                      // Student entity (implemented)
+│   ├── Course.java                       // Course entity (implemented)
+│   ├── LibraryBook.java                  // Library book entity (planned)
+│   ├── HostelRoom.java                   // Hostel room entity (planned)
+│   ├── Ticket.java                       // Help-desk ticket entity (planned)
+│   └── Event.java                        // Event entity (planned)
+├── persistence/
+│   ├── DataPersistence.java              // JSON load/save orchestration (implemented)
+│   ├── JsonFileHandler.java              // Low-level JSON file utilities (implemented)
+└── datastructures/
+    ├── CustomArrayList.java              // Dynamic array implementation (implemented)
+    ├── CustomLinkedList.java             // Linked list implementation (implemented)
+    ├── CustomHashMap.java                // Hash table implementation (implemented)
+    ├── CustomQueue.java                  // FIFO queue implementation (implemented)
+    └── CustomStack.java                  // LIFO stack implementation (implemented)
 ```
 ---
 
@@ -135,29 +135,39 @@ public abstract class User {
     public abstract boolean hasPermission(String action);
 }
 ```
-#### StudentRecord.java
+#### Student.java
 ```java
-public class StudentRecord {
+public class Student extends User {
     private String id;
     private String name;
+    private String department;
+    private int year;
     private String email;
     private String phone;
-    private List<String> enrolledCourseIds;
-    private List<String> borrowedBookIds;
-    private String hostelRoomId;
-    private List<String> helpDeskTicketIds;
-    private List<String> eventIds;
+    private CustomArrayList<String> enrolledCourses;
+    private CustomArrayList<String> borrowedBooks;
+    private String hostelRoom;
+    private LocalDate registrationDate;
+
+    public void enrollCourse(String courseCode);
+    public void dropCourse(String courseCode);
 }
 ```
 #### Course.java
 ```java
 public class Course {
-    private String id;
-    private String code;
-    private String name;
-    private String description;
+    private String courseCode;
+    private String courseName;
+    private String instructor;
     private int credits;
-    private List<String> enrolledStudentIds;
+    private int maxCapacity;
+    private int enrolledCount;
+    private CustomArrayList<String> enrolledStudents;
+    private String schedule;
+
+    public boolean isFull();
+    public boolean enrollStudent(String studentId);
+    public boolean dropStudent(String studentId);
 }
 ```
 #### LibraryBook.java
@@ -209,43 +219,41 @@ public class Event {
 ### 4.3 Data Structure Mapping by Module
 | Module | Primary Data Structure | Justification |
 | ----- | ----- | ----- |
-| **Student Records** | `CustomHashMap<String, StudentRecord>`  | O(1) lookup by student ID |
+| **Student Records** | `CustomHashMap<String, Student>`  | O(1) lookup by student ID |
 | **Course Registration** | `CustomHashMap<String, Course>`  | Fast course code lookup |
-| **Library** | `CustomHashMap<String, LibraryBook>` + `CustomQueue<String>`  | Book lookup + FIFO waiting list |
-| **Hostel** | `CustomTreeMap<String, HostelRoom>`  | Sorted room number ordering |
-| **Help Desk** | `CustomQueue<Ticket>` + `CustomStack<String>`  | FIFO ticket processing + status history |
-| **Events** | `CustomTreeMap<Date, Event>`  | Chronological event ordering |
+| **Library (Planned)** | `CustomHashMap<String, LibraryBook>` + `CustomQueue<String>`  | Book lookup + FIFO waiting list |
+| **Hostel (Planned)** | `CustomHashMap<String, HostelRoom>`  | Fast room lookup by room ID |
+| **Help Desk (Planned)** | `CustomQueue<Ticket>` + `CustomStack<String>`  | FIFO ticket processing + status history |
+| **Events (Planned)** | `CustomArrayList<Event>`  | Simple event list and iteration for current scope |
 ---
 
 ## 5. API Design
 ### 5.1 Module Interface Specifications
-#### StudentRecordsModule
+#### StudentService
 ```java
-public class StudentRecordsModule {
-    // Admin operations
-    public void addStudent(StudentRecord student);
-    public StudentRecord getStudent(String studentId);
-    public List<StudentRecord> getAllStudents();
-    public void updateStudent(String studentId, StudentRecord updated);
-    public void deleteStudent(String studentId);
-    public List<StudentRecord> searchByName(String name);
+public class StudentService {
+    public void addStudent(Student student);
+    public Student getStudent(String studentId);
+    public void updateStudent(Student student);
+    public boolean deleteStudent(String studentId);
+    public CustomArrayList<Student> getAllStudents();
+    public CustomArrayList<Student> getStudentsByDepartment(String department);
 }
 ```
-#### CourseRegistrationModule
+#### CourseService
 ```java
-public class CourseRegistrationModule {
-    // Admin operations
+public class CourseService {
     public void addCourse(Course course);
-    public void updateCourse(String courseId, Course updated);
-    public void deleteCourse(String courseId);
-    
-    // Student operations
-    public void registerStudent(String studentId, String courseId);
-    public void dropCourse(String studentId, String courseId);
-    public List<Course> getStudentCourses(String studentId);
-    public List<Course> getAvailableCourses();
+    public Course getCourse(String courseCode);
+    public void updateCourse(Course course);
+    public boolean deleteCourse(String courseCode);
+    public CustomArrayList<Course> getAllCourses();
+    public CustomArrayList<Course> getAvailableCourses();
+    public boolean enrollStudent(String studentId, String courseCode);
+    public boolean dropStudent(String studentId, String courseCode);
 }
 ```
+#### Planned Modules (Not Yet Implemented in Current Codebase)
 #### LibraryModule
 ```java
 public class LibraryModule {
@@ -307,6 +315,43 @@ public class EventBookingModule {
     public List<Event> getStudentEvents(String studentId);
 }
 ```
+#### Planned Module Implementation Order (Team Priority)
+Use this order so dependencies are handled first and integration is easier:
+
+1. **LibraryModule (Priority 1)**
+   - Implement `LibraryBook` model and JSON persistence (`data/books.json`).
+   - Add admin operations: add/remove/list books.
+   - Add student operations: borrow/return and waiting list queue.
+   - Integrate with `ConsoleUI` menu options for admin and student.
+
+2. **HelpDeskModule (Priority 2)**
+   - Implement `Ticket` model and JSON persistence (`data/tickets.json`).
+   - Implement queue-based ticket processing for admin.
+   - Implement student ticket submission and status-history stack.
+   - Integrate with `ConsoleUI` and role-based access.
+
+3. **HostelModule (Priority 3)**
+   - Implement `HostelRoom` model and JSON persistence (`data/hostels.json`).
+   - Add room CRUD and availability logic.
+   - Add student room allocation/vacate flow.
+   - Integrate hostel details with `Student` records.
+
+4. **EventBookingModule (Priority 4)**
+   - Implement `Event` model and JSON persistence (`data/events.json`).
+   - Add event create/update/cancel admin flow.
+   - Add student register/cancel and upcoming events listing.
+   - Integrate with `ConsoleUI` event menu entries.
+
+#### Planned Module Completion Checklist
+- [ ] Model class created and validated
+- [ ] Service/module class implemented with all methods
+- [ ] Persistence load/save methods added in `DataPersistence`
+- [ ] JSON sample data file updated
+- [ ] Admin menu flow implemented in `ConsoleUI`
+- [ ] Student menu flow implemented in `ConsoleUI`
+- [ ] Input validation + duplicate checks completed
+- [ ] Basic unit/integration tests added
+
 ### 5.2 Menu Flow Specifications
 #### Admin Menu Options
 ```
@@ -340,7 +385,7 @@ public class EventBookingModule {
 
 ## 6. Security Considerations
 ### 6.1 Authentication
-- **Credential Storage**: Admin credentials hardcoded for demonstration; student credentials stored in DataStore
+- **Credential Storage**: Admin credentials hardcoded for demonstration; student credentials loaded from JSON via `DataPersistence`
 - **Login Validation**: Username/password matching with role verification
 - **Session Management**: User object maintained in memory during active session
 ### 6.2 Authorization
@@ -370,8 +415,9 @@ public class EventBookingModule {
 | Component | Test Focus |
 | ----- | ----- |
 | **Custom Data Structures** | Add, remove, search, edge cases (empty, full, duplicate) |
-| **LoginManager** | Valid/invalid credentials, role assignment |
-| **Each Module** | CRUD operations, business logic validation |
+| **LoginService** | Valid/invalid credentials, role assignment |
+| **Implemented Services** | Student + Course business logic validation |
+| **Planned Modules** | Define tests when module implementations are added |
 | **Models** | Getter/setter functionality, data integrity |
 ### 7.2 Integration Testing
 - **Login → Menu Flow**: Verify correct menu displayed per role
@@ -381,8 +427,8 @@ public class EventBookingModule {
 | Scenario | Steps | Expected Result |
 | ----- | ----- | ----- |
 | Admin adds student | Login as admin → Add student → Verify in list | Student appears in records |
-| Student borrows book | Login as student → Borrow available book | Book marked unavailable, added to student |
-| Ticket processing | Student submits → Admin processes | FIFO order maintained, history tracked |
+| Student registers course | Login as student → Register available course | Student and course enrollment both updated |
+| Student drops course | Login as student → Drop registered course | Student and course enrollment both updated |
 ### 7.4 Test Cases for Custom Data Structures
 ```java
 // CustomHashMap Tests
@@ -415,14 +461,14 @@ public class EventBookingModule {
 - [ ] Implement package structure
 - [ ] Create Main.java entry point
 - [ ] Implement User, Admin, Student classes
-- [ ] Build LoginManager
-- [ ] Develop Menu system
-- [ ] Create DataStore singleton
+- [ ] Build LoginService
+- [ ] Develop ConsoleUI menu system
+- [ ] Configure JSON persistence layer
 #### Phase 3: Module Implementation 
-- [ ] **Person 1**: Main class, login, menus, DataStore
-- [ ] **Person 2**: StudentRecordsModule, CourseRegistrationModule
-- [ ] **Person 3**: LibraryModule, HostelModule, HelpDeskModule
-- [ ] **Person 4**: EventBookingModule, Custom data structures
+- [ ] **Group 1**: Main class, login, menu UI, JSON persistence
+- [ ] **Group 2**: StudentService, CourseService
+- [ ] **Group 3**: LibraryModule (planned), HostelModule (planned), HelpDeskModule (planned)
+- [ ] **Group 4**: EventBookingModule (planned), Custom data structures
 #### Phase 4: Testing & Documentation 
 - [ ] Unit test all components
 - [ ] Integration testing
@@ -432,10 +478,10 @@ public class EventBookingModule {
 ### 8.2 Team Assignment Matrix
 | Team Member | Primary Responsibility | Data Structures Used |
 | ----- | ----- | ----- |
-| **Group 1** | Main, Login, Menu, DataStore | All (integration) |
-| **Group 2** | Student Records, Course Registration | CustomArrayList, CustomHashMap |
-| **Group 3** | Library, Hostel, Help Desk | CustomQueue, CustomStack, CustomTreeMap |
-| **Group 4** | Event Booking, Custom DS Implementation | CustomLinkedList, CustomTreeMap |
+| **Group 1** | Main, LoginService, ConsoleUI, Persistence | All (integration) |
+| **Group 2** | StudentService, CourseService | CustomArrayList, CustomHashMap |
+| **Group 3** | Library, Hostel, Help Desk (planned) | CustomQueue, CustomStack, CustomHashMap |
+| **Group 4** | Event Booking (planned), Custom DS Implementation | CustomLinkedList, CustomArrayList |
 ### 8.3 Deliverables Checklist
 - [ ] Complete source code with all modules
 - [ ] Custom data structure implementations with documentation
@@ -451,7 +497,7 @@ public class EventBookingModule {
 | Risk | Mitigation Strategy |
 | ----- | ----- |
 | Data structure complexity | Start with Java built-in, refactor to custom |
-| Integration issues | Daily sync meetings, shared DataStore |
+| Integration issues | Daily sync meetings, shared service contracts and JSON schemas |
 | Scope creep | Strict adherence to defined modules |
 | Testing gaps | Parallel testing during development |
 ---
@@ -463,43 +509,107 @@ public class EventBookingModule {
 | CustomArrayList | O(1)* | O(n) | O(n) | Student lists, event attendees |
 | CustomLinkedList | O(1) | O(1)** | O(n) | Dynamic collections |
 | CustomHashMap | O(1) | O(1) | O(1) | ID-based lookups |
-| CustomTreeMap | O(log n) | O(log n) | O(log n) | Sorted data (rooms, dates) |
 | CustomQueue | O(1) | O(1) | O(n) | Ticket processing, waiting lists |
 | CustomStack | O(1) | O(1) | O(n) | Status history, undo operations |
 *Amortized
 **With reference to node
 
-### 9.2 Sample DataStore Implementation
+### 9.2 Sample DataPersistence/Service Wiring
 ```java
-public class DataStore {
-    private static DataStore instance;
-    
-    // Collections using custom data structures
-    public CustomHashMap<String, StudentRecord> students;
-    public CustomHashMap<String, Course> courses;
-    public CustomHashMap<String, LibraryBook> libraryBooks;
-    public CustomTreeMap<String, HostelRoom> hostelRooms;
-    public CustomQueue<Ticket> helpDeskTickets;
-    public CustomTreeMap<Date, Event> events;
-    
-    private DataStore() {
-        students = new CustomHashMap<>();
-        courses = new CustomHashMap<>();
-        libraryBooks = new CustomHashMap<>();
-        hostelRooms = new CustomTreeMap<>();
-        helpDeskTickets = new CustomQueue<>();
-        events = new CustomTreeMap<>();
-    }
-    
-    public static DataStore getInstance() {
-        if (instance == null) {
-            instance = new DataStore();
-        }
-        return instance;
+public class Bootstrap {
+    public static void initialize() {
+        DataPersistence.loadAllData();
+        StudentService.getInstance();   // hydrated through persistence
+        CourseService.getInstance();    // hydrated through persistence
+        LoginService.getInstance();     // uses loaded student credentials
     }
 }
 ```
+### 10. Here is the UML Design of the app.
+```mermaid
+erDiagram
+    USER ||--|| STUDENT : "is a (student role)"
+    STUDENT }|--o{ COURSE : "enrolls in"
+    STUDENT }|--o{ LIBRARY_BOOK : "borrows"
+    STUDENT }|--o{ EVENT : "attends"
+    STUDENT ||--o| HOSTEL_ROOM : "assigned to"
+    STUDENT ||--o{ TICKET : "submits"
+    LIBRARY_BOOK ||--o{ STUDENT : "waiting list"
 
+    USER {
+        string id PK
+        string username
+        string password
+        string role
+    }
 
+    STUDENT {
+        string id PK
+        string name
+        string email
+        string phone
+        string department
+        int year
+        string_array enrolledCourses
+        string_array borrowedBooks
+        string hostelRoomId FK
+    }
+
+    COURSE {
+        string id PK
+        string code
+        string name
+        string instructor
+        int credits
+        int maxCapacity
+        string_array enrolledStudentIds
+    }
+
+    LIBRARY_BOOK {
+        string id PK
+        string title
+        string author
+        string isbn
+        boolean isAvailable
+        string borrowedByStudentId FK
+        string_array waitingListStudentIds
+    }
+
+    HOSTEL_ROOM {
+        string id PK
+        string roomNumber
+        int capacity
+        string_array occupantStudentIds
+        boolean isAvailable
+    }
+
+    TICKET {
+        string id PK
+        string studentId FK
+        string subject
+        string description
+        string status
+        timestamp createdAt
+        timestamp resolvedAt
+        string_array statusHistory
+    }
+
+    EVENT {
+        string id PK
+        string name
+        string description
+        date date
+        string location
+        string_array attendeeStudentIds
+    }
+
+    CUSTOM_DATA_STRUCTURES {
+        string id PK
+        string name
+        string type
+        string usedInModule
+    }
+
+```
 
 
