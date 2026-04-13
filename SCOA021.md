@@ -108,6 +108,49 @@ src/
     ├── CustomQueue.java                  // FIFO queue implementation (implemented)
     └── CustomStack.java                  // LIFO stack implementation (implemented)
 ```
+### 3.3 Data Files and Schemas
+```
+data/
+├── students.json                         // Student records (implemented, includes gender)
+├── courses.json                          // Course records (implemented)
+├── books.json                            // Library books dataset
+├── hostels.json                          // Hostel master data
+├── tickets.json                          // Help-desk ticket dataset
+└── events.json                           // Events dataset
+
+schemas/
+├── students.schema.json                  // Schema for data/students.json
+├── courses.schema.json                   // Schema for data/courses.json
+├── books.schema.json                     // Schema for data/books.json
+├── hostels.schema.json                   // Schema for data/hostels.json
+├── tickets.schema.json                   // Schema for data/tickets.json
+└── events.schema.json                    // Schema for data/events.json
+```
+
+### 3.4 Schema Validation Strategy
+- All JSON data files are validated against matching schemas before loading.
+- Validation is triggered in `DataPersistence.loadAllData()`.
+- Validator implementation: `JsonSchemaValidator` (project-local validator).
+- Validation supports the schema rules used in this project: `type`, `required`, `properties`, `additionalProperties`, `items`, `enum`, `minItems`, `minLength`, `minimum`/`maximum`, `pattern`.
+- Strict mode toggle:
+  - `STRICT_SCHEMA=true` -> throws and stops startup on schema issues.
+  - default/unset -> logs `[schema-warning]` and continues startup.
+
+#### Run With Strict Schema Validation (PowerShell)
+```powershell
+# From project root:
+$env:STRICT_SCHEMA="true"
+javac -d out (Get-ChildItem -Recurse -Path src -Filter *.java | ForEach-Object { $_.FullName })
+java -cp out Main
+```
+
+#### Run With Lenient Validation (PowerShell)
+```powershell
+# From project root:
+Remove-Item Env:STRICT_SCHEMA -ErrorAction SilentlyContinue
+javac -d out (Get-ChildItem -Recurse -Path src -Filter *.java | ForEach-Object { $_.FullName })
+java -cp out Main
+```
 ---
 
 ## 4. Data Model
@@ -117,7 +160,7 @@ The system manages the following core entities with their relationships:
 | Entity | Primary Key | Key Relationships |
 | ----- | ----- | ----- |
 | **Users** | `id`  | Links to Students (1:1 for student role) |
-| **Students** | `id`  | Enrolls in Courses (M:N), Borrows Books (M:N), Assigned to Rooms (M:1), Submits Tickets (1:N), Attends Events (M:N) |
+| **Students** | `studentNumber`  | Enrolls in Courses (M:N), Borrows Books (M:N), Assigned to Rooms (M:1), Submits Tickets (1:N), Attends Events (M:N) |
 | **Courses** | `id`  | Has enrolled Students (M:N) |
 | **LibraryBooks** | `id`  | Borrowed by Student (M:1), Has waiting list (M:N) |
 | **HostelRooms** | `id`  | Has occupant Students (1:N) |
@@ -138,8 +181,9 @@ public abstract class User {
 #### Student.java
 ```java
 public class Student extends User {
-    private String id;
+    private String studentNumber;
     private String name;
+    private String gender;
     private String department;
     private int year;
     private String email;
@@ -149,6 +193,8 @@ public class Student extends User {
     private String hostelRoom;
     private LocalDate registrationDate;
 
+    public String getStudentNumber();
+    public String getGender();
     public void enrollCourse(String courseCode);
     public void dropCourse(String courseCode);
 }
@@ -166,8 +212,8 @@ public class Course {
     private String schedule;
 
     public boolean isFull();
-    public boolean enrollStudent(String studentId);
-    public boolean dropStudent(String studentId);
+    public boolean enrollStudent(String studentNumber);
+    public boolean dropStudent(String studentNumber);
 }
 ```
 #### LibraryBook.java
@@ -196,7 +242,7 @@ public class HostelRoom {
 ```java
 public class Ticket {
     private String id;
-    private String studentId;
+    private String studentNumber;
     private String subject;
     private String description;
     private String status;  // "open", "in-progress", "closed"
@@ -219,7 +265,7 @@ public class Event {
 ### 4.3 Data Structure Mapping by Module
 | Module | Primary Data Structure | Justification |
 | ----- | ----- | ----- |
-| **Student Records** | `CustomHashMap<String, Student>`  | O(1) lookup by student ID |
+| **Student Records** | `CustomHashMap<String, Student>`  | O(1) lookup by student number |
 | **Course Registration** | `CustomHashMap<String, Course>`  | Fast course code lookup |
 | **Library (Planned)** | `CustomHashMap<String, LibraryBook>` + `CustomQueue<String>`  | Book lookup + FIFO waiting list |
 | **Hostel (Planned)** | `CustomHashMap<String, HostelRoom>`  | Fast room lookup by room ID |
@@ -233,9 +279,9 @@ public class Event {
 ```java
 public class StudentService {
     public void addStudent(Student student);
-    public Student getStudent(String studentId);
+    public Student getStudent(String studentNumber);
     public void updateStudent(Student student);
-    public boolean deleteStudent(String studentId);
+    public boolean deleteStudent(String studentNumber);
     public CustomArrayList<Student> getAllStudents();
     public CustomArrayList<Student> getStudentsByDepartment(String department);
 }
@@ -249,8 +295,8 @@ public class CourseService {
     public boolean deleteCourse(String courseCode);
     public CustomArrayList<Course> getAllCourses();
     public CustomArrayList<Course> getAvailableCourses();
-    public boolean enrollStudent(String studentId, String courseCode);
-    public boolean dropStudent(String studentId, String courseCode);
+    public boolean enrollStudent(String studentNumber, String courseCode);
+    public boolean dropStudent(String studentNumber, String courseCode);
 }
 ```
 #### Planned Modules (Not Yet Implemented in Current Codebase)
@@ -263,11 +309,11 @@ public class LibraryModule {
     public List<LibraryBook> getAllBooks();
     
     // Student operations
-    public boolean borrowBook(String studentId, String bookId);
-    public void returnBook(String studentId, String bookId);
-    public void joinWaitingList(String studentId, String bookId);
-    public List<LibraryBook> getBorrowedBooks(String studentId);
-    public int getWaitingListPosition(String studentId, String bookId);
+    public boolean borrowBook(String studentNumber, String bookId);
+    public void returnBook(String studentNumber, String bookId);
+    public void joinWaitingList(String studentNumber, String bookId);
+    public List<LibraryBook> getBorrowedBooks(String studentNumber);
+    public int getWaitingListPosition(String studentNumber, String bookId);
 }
 ```
 #### HostelModule
@@ -280,9 +326,9 @@ public class HostelModule {
     public List<HostelRoom> getAvailableRooms();
     
     // Student operations
-    public boolean applyForRoom(String studentId, String roomId);
-    public void vacateRoom(String studentId);
-    public HostelRoom getStudentRoom(String studentId);
+    public boolean applyForRoom(String studentNumber, String roomId);
+    public void vacateRoom(String studentNumber);
+    public HostelRoom getStudentRoom(String studentNumber);
 }
 ```
 #### HelpDeskModule
@@ -295,8 +341,8 @@ public class HelpDeskModule {
     public List<Ticket> getTicketsByStatus(String status);
     
     // Student operations
-    public void submitTicket(String studentId, String subject, String description);
-    public List<Ticket> getStudentTickets(String studentId);
+    public void submitTicket(String studentNumber, String subject, String description);
+    public List<Ticket> getStudentTickets(String studentNumber);
     public Stack<String> getTicketHistory(String ticketId);
 }
 ```
@@ -309,10 +355,10 @@ public class EventBookingModule {
     public void cancelEvent(String eventId);
     
     // Student operations
-    public void registerForEvent(String studentId, String eventId);
-    public void cancelRegistration(String studentId, String eventId);
+    public void registerForEvent(String studentNumber, String eventId);
+    public void cancelRegistration(String studentNumber, String eventId);
     public List<Event> getUpcomingEvents();
-    public List<Event> getStudentEvents(String studentId);
+    public List<Event> getStudentEvents(String studentNumber);
 }
 ```
 #### Planned Module Implementation Order (Team Priority)
@@ -332,6 +378,7 @@ Use this order so dependencies are handled first and integration is easier:
 
 3. **HostelModule (Priority 3)**
    - Implement `HostelRoom` model and JSON persistence (`data/hostels.json`).
+   - Validate hostel data against `schemas/hostels.schema.json` before loading.
    - Add room CRUD and availability logic.
    - Add student room allocation/vacate flow.
    - Integrate hostel details with `Student` records.
@@ -347,6 +394,7 @@ Use this order so dependencies are handled first and integration is easier:
 - [ ] Service/module class implemented with all methods
 - [ ] Persistence load/save methods added in `DataPersistence`
 - [ ] JSON sample data file updated
+- [ ] JSON schema file added/updated for module data contracts
 - [ ] Admin menu flow implemented in `ConsoleUI`
 - [ ] Student menu flow implemented in `ConsoleUI`
 - [ ] Input validation + duplicate checks completed
@@ -585,7 +633,7 @@ erDiagram
 
     TICKET {
         string id PK
-        string studentId FK
+        string studentNumber FK
         string subject
         string description
         string status

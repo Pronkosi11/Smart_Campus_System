@@ -60,12 +60,12 @@ public class CourseService {
         return available;
     }
 
-    public boolean enrollStudent(String studentId, String courseCode) {
+    public boolean enrollStudent(String studentNumber, String courseCode) {
         Course course = courses.get(courseCode);
-        Student student = StudentService.getInstance().getStudent(studentId);
+        Student student = StudentService.getInstance().getStudent(studentNumber);
 
         if (course != null && student != null && !course.isFull()) {
-            if (course.enrollStudent(studentId)) {
+            if (course.enrollStudent(studentNumber)) {
                 student.enrollCourse(courseCode);
                 StudentService.getInstance().updateStudent(student);
                 DataPersistence.saveCourses(courses);
@@ -75,12 +75,12 @@ public class CourseService {
         return false;
     }
 
-    public boolean dropStudent(String studentId, String courseCode) {
+    public boolean dropStudent(String studentNumber, String courseCode) {
         Course course = courses.get(courseCode);
-        Student student = StudentService.getInstance().getStudent(studentId);
+        Student student = StudentService.getInstance().getStudent(studentNumber);
 
         if (course != null && student != null) {
-            if (course.dropStudent(studentId)) {
+            if (course.dropStudent(studentNumber)) {
                 student.dropCourse(courseCode);
                 StudentService.getInstance().updateStudent(student);
                 DataPersistence.saveCourses(courses);

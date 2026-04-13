@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-campus.local/schemas/courses.schema.json",
+  "title": "Courses Data",
+  "type": "object",
+  "required": ["courses"],
+  "additionalProperties": false,
+  "properties": {
+    "courses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "courseCode",
+          "courseName",
+          "instructor",
+          "credits",
+          "maxCapacity",
+          "schedule",
+          "enrolledStudents"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "courseCode": { "type": "string", "minLength": 1 },
+          "courseName": { "type": "string", "minLength": 1 },
+          "instructor": { "type": "string", "minLength": 1 },
+          "credits": { "type": "integer", "minimum": 1 },
+          "maxCapacity": { "type": "integer", "minimum": 1 },
+          "schedule": { "type": "string", "minLength": 1 },
+          "enrolledStudents": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

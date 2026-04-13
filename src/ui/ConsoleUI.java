@@ -63,12 +63,12 @@ public class ConsoleUI {
     }
 
     private void handleLoginAsStudent() {
-        System.out.print("Student ID: ");
-        String id = scanner.nextLine().trim();
+        System.out.print("Student Number: ");
+        String studentNumber = scanner.nextLine().trim();
         System.out.print("Password: ");
         String pass = scanner.nextLine();
 
-        User u = LoginService.getInstance().login(id, pass);
+        User u = LoginService.getInstance().login(studentNumber, pass);
         if (u instanceof Student) {
             System.out.println("Login successful.");
             studentMenu((Student) u);
@@ -78,13 +78,13 @@ public class ConsoleUI {
     }
 
     private void registerStudent() {
-        System.out.print("Student ID: ");
-        String id = scanner.nextLine().trim();
-        if (id.isEmpty()) {
-            System.out.println("ID cannot be empty.");
+        System.out.print("Student Number: ");
+        String studentNumber = scanner.nextLine().trim();
+        if (studentNumber.isEmpty()) {
+            System.out.println("Student number cannot be empty.");
             return;
         }
-        if (StudentService.getInstance().getStudent(id) != null) {
+        if (StudentService.getInstance().getStudent(studentNumber) != null) {
             System.out.println("Student already exists.");
             return;
         }
@@ -92,6 +92,11 @@ public class ConsoleUI {
         String name = scanner.nextLine().trim();
         System.out.print("Password: ");
         String password = scanner.nextLine();
+        System.out.print("Gender (Male/Female/Other): ");
+        String gender = scanner.nextLine().trim();
+        if (gender.isEmpty()) {
+            gender = "Unspecified";
+        }
         System.out.print("Department: ");
         String dept = scanner.nextLine().trim();
         if (dept.isEmpty()) {
@@ -103,9 +108,9 @@ public class ConsoleUI {
         System.out.print("Phone: ");
         String phone = scanner.nextLine().trim();
 
-        Student s = new Student(id, name, password, dept, year, email, phone);
+        Student s = new Student(studentNumber, name, password, gender, dept, year, email, phone);
         StudentService.getInstance().addStudent(s);
-        System.out.println("Registration successful. You can log in with your student ID.");
+        System.out.println("Registration successful. You can log in with your student number.");
     }
 
     private void adminMenu() {
@@ -264,13 +269,13 @@ public class ConsoleUI {
         System.out.print("Course code: ");
         String code = scanner.nextLine().trim();
         if (a == 1) {
-            if (cs.enrollStudent(student.getId(), code)) {
+            if (cs.enrollStudent(student.getStudentNumber(), code)) {
                 System.out.println("Registered.");
             } else {
                 System.out.println("Could not register (full, duplicate, or invalid code).");
             }
         } else {
-            if (cs.dropStudent(student.getId(), code)) {
+            if (cs.dropStudent(student.getStudentNumber(), code)) {
                 System.out.println("Dropped.");
             } else {
                 System.out.println("Could not drop.");
@@ -281,8 +286,9 @@ public class ConsoleUI {
     private void viewStudentProfile(Student student) {
         System.out.println();
         printHeader("MY PROFILE");
-        System.out.println("ID         : " + student.getId());
+        System.out.println("Student No.: " + student.getStudentNumber());
         System.out.println("Name       : " + student.getName());
+        System.out.println("Gender     : " + student.getGender());
         System.out.println("Department : " + student.getDepartment());
         System.out.println("Year       : " + student.getYear());
         System.out.println("Email      : " + student.getEmail());

@@ -25,15 +25,25 @@ public final class DataPersistence {
 
     public static final String STUDENTS_FILE = "data/students.json";
     public static final String COURSES_FILE = "data/courses.json";
-    // public static final String BOOKS_FILE = "data/books.json";
-    // public static final String HOSTELS_FILE = "data/hostels.json";
-    // public static final String TICKETS_FILE = "data/tickets.json";
-    // public static final String EVENTS_FILE = "data/events.json";
+    public static final String BOOKS_FILE = "data/books.json";
+    public static final String HOSTELS_FILE = "data/hostels.json";
+    public static final String TICKETS_FILE = "data/tickets.json";
+    public static final String EVENTS_FILE = "data/events.json";
+
+    public static final String STUDENTS_SCHEMA_FILE = "schemas/students.schema.json";
+    public static final String COURSES_SCHEMA_FILE = "schemas/courses.schema.json";
+    public static final String BOOKS_SCHEMA_FILE = "schemas/books.schema.json";
+    public static final String HOSTELS_SCHEMA_FILE = "schemas/hostels.schema.json";
+    public static final String TICKETS_SCHEMA_FILE = "schemas/tickets.schema.json";
+    public static final String EVENTS_SCHEMA_FILE = "schemas/events.schema.json";
+    private static final boolean STRICT_SCHEMA_VALIDATION =
+            "true".equalsIgnoreCase(System.getenv("STRICT_SCHEMA"));
 
     private DataPersistence() {
     }
 
     public static void loadAllData() {
+        validateConfiguredDataFiles();
         loadStudents();
         loadCourses();
     }
@@ -62,9 +72,10 @@ public final class DataPersistence {
 
     private static Map<String, Object> studentToMap(Student s) {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("id", s.getId());
+        m.put("studentNumber", s.getStudentNumber());
         m.put("name", s.getName());
         m.put("password", s.getPassword());
+        m.put("gender", s.getGender());
         m.put("department", s.getDepartment());
         m.put("year", s.getYear());
         m.put("email", s.getEmail());
@@ -88,7 +99,7 @@ public final class DataPersistence {
             for (Map<String, Object> row : rows) {
                 Student s = studentFromMap(row);
                 if (s != null) {
-                    map.put(s.getId(), s);
+                    map.put(s.getStudentNumber(), s);
                 }
             }
             StudentService.getInstance().setStudents(map);
@@ -102,14 +113,19 @@ public final class DataPersistence {
     }
 
     private static Student studentFromMap(Map<String, Object> row) {
-        String id = getStr(row, "id", null);
-        if (id == null) {
+        String studentNumber = getStr(row, "studentNumber", null);
+        // Backward compatibility for older data files.
+        if (studentNumber == null) {
+            studentNumber = getStr(row, "id", null);
+        }
+        if (studentNumber == null) {
             return null;
         }
         Student s = new Student(
-                id,
+                studentNumber,
                 getStr(row, "name", ""),
                 getStr(row, "password", ""),
+                getStr(row, "gender", "Unspecified"),
                 getStr(row, "department", "General"),
                 getInt(row, "year", 1),
                 getStr(row, "email", ""),
@@ -312,5 +328,46 @@ public final class DataPersistence {
             return ((Number) o).doubleValue();
         }
         return Double.parseDouble(o.toString());
+    }
+
+    private static void validateConfiguredDataFiles() {
+        validateFileAgainstSchema(STUDENTS_FILE, STUDENTS_SCHEMA_FILE);
+        validateFileAgainstSchema(COURSES_FILE, COURSES_SCHEMA_FILE);
+        validateFileAgainstSchema(BOOKS_FILE, BOOKS_SCHEMA_FILE);
+        validateFileAgainstSchema(HOSTELS_FILE, HOSTELS_SCHEMA_FILE);
+        validateFileAgainstSchema(TICKETS_FILE, TICKETS_SCHEMA_FILE);
+        validateFileAgainstSchema(EVENTS_FILE, EVENTS_SCHEMA_FILE);
+    }
+
+    private static void validateFileAgainstSchema(String dataFile, String schemaFile) {
+        try {
+            String dataRaw = JsonFileHandler.readFile(dataFile);
+            String schemaRaw = JsonFileHandler.readFile(schemaFile);
+
+            if (schemaRaw == null || schemaRaw.isBlank()) {
+                handleValidationIssue("Schema missing/empty: " + schemaFile, null);
+                return;
+            }
+            if (dataRaw == null || dataRaw.isBlank()) {
+                handleValidationIssue("Data file missing/empty: " + dataFile, null);
+                return;
+            }
+
+            Map<String, Object> data = JsonFileHandler.parseObject(dataRaw);
+            Map<String, Object> schema = JsonFileHandler.parseObject(schemaRaw);
+            JsonSchemaValidator.validate(data, schema, dataFile);
+        } catch (Exception e) {
+            handleValidationIssue("Schema validation failed for " + dataFile + ": " + e.getMessage(), e);
+        }
+    }
+
+    private static void handleValidationIssue(String message, Exception e) {
+        if (STRICT_SCHEMA_VALIDATION) {
+            if (e == null) {
+                throw new IllegalStateException(message);
+            }
+            throw new IllegalStateException(message, e);
+        }
+        System.err.println("[schema-warning] " + message);
     }
 }

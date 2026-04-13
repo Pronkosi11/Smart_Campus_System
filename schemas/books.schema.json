@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-campus.local/schemas/books.schema.json",
+  "title": "Books Data",
+  "type": "object",
+  "required": ["books"],
+  "additionalProperties": false,
+  "properties": {
+    "books": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "bookId",
+          "title",
+          "author",
+          "isbn",
+          "totalCopies",
+          "availableCopies",
+          "waitingList"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "bookId": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "author": { "type": "string", "minLength": 1 },
+          "isbn": { "type": "string", "minLength": 1 },
+          "totalCopies": { "type": "integer", "minimum": 0 },
+          "availableCopies": { "type": "integer", "minimum": 0 },
+          "waitingList": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

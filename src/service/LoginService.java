@@ -45,11 +45,11 @@ public class LoginService {
     }
 
     public void registerStudent(Student student) {
-        users.put(student.getId(), student);
+        users.put(student.getStudentNumber(), student);
     }
 
-    public void unregisterStudent(String studentId) {
-        users.remove(studentId);
+    public void unregisterStudent(String studentNumber) {
+        users.remove(studentNumber);
     }
 
     public boolean changePassword(String userId, String oldPassword, String newPassword) {

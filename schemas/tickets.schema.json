@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-campus.local/schemas/tickets.schema.json",
+  "title": "Tickets Data",
+  "type": "object",
+  "required": ["pending", "resolved", "ticketCounter"],
+  "additionalProperties": false,
+  "properties": {
+    "pending": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "resolved": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "ticketCounter": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

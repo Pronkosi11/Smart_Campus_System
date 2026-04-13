@@ -21,24 +21,24 @@ public class StudentService {
     }
 
     public void addStudent(Student student) {
-        students.put(student.getId(), student);
+        students.put(student.getStudentNumber(), student);
         LoginService.getInstance().registerStudent(student);
         DataPersistence.saveStudents(students);
     }
 
-    public Student getStudent(String studentId) {
-        return students.get(studentId);
+    public Student getStudent(String studentNumber) {
+        return students.get(studentNumber);
     }
 
     public void updateStudent(Student student) {
-        students.put(student.getId(), student);
+        students.put(student.getStudentNumber(), student);
         DataPersistence.saveStudents(students);
     }
 
-    public boolean deleteStudent(String studentId) {
-        Student removed = students.remove(studentId);
+    public boolean deleteStudent(String studentNumber) {
+        Student removed = students.remove(studentNumber);
         if (removed != null) {
-            LoginService.getInstance().unregisterStudent(studentId);
+            LoginService.getInstance().unregisterStudent(studentNumber);
             DataPersistence.saveStudents(students);
             return true;
         }

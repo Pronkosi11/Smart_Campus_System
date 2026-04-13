@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-campus.local/schemas/events.schema.json",
+  "title": "Events Data",
+  "type": "object",
+  "required": ["events"],
+  "additionalProperties": false,
+  "properties": {
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "eventId",
+          "eventName",
+          "description",
+          "venue",
+          "startDateTime",
+          "endDateTime",
+          "maxParticipants",
+          "organizer",
+          "registeredStudents"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "eventId": { "type": "string", "minLength": 1 },
+          "eventName": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "venue": { "type": "string", "minLength": 1 },
+          "startDateTime": { "type": "string" },
+          "endDateTime": { "type": "string" },
+          "maxParticipants": { "type": "integer", "minimum": 1 },
+          "organizer": { "type": "string", "minLength": 1 },
+          "registeredStudents": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

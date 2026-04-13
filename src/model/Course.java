@@ -51,17 +51,17 @@ public class Course {
         return enrolledCount >= maxCapacity;
     }
 
-    public boolean enrollStudent(String studentId) {
-        if (!isFull() && !enrolledStudents.contains(studentId)) {
-            enrolledStudents.add(studentId);
+    public boolean enrollStudent(String studentNumber) {
+        if (!isFull() && !enrolledStudents.contains(studentNumber)) {
+            enrolledStudents.add(studentNumber);
             enrolledCount++;
             return true;
         }
         return false;
     }
 
-    public boolean dropStudent(String studentId) {
-        if (enrolledStudents.remove(studentId)) {
+    public boolean dropStudent(String studentNumber) {
+        if (enrolledStudents.remove(studentNumber)) {
             enrolledCount--;
             return true;
         }

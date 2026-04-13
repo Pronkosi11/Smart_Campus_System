@@ -1,1 +1,35 @@
-{"rooms":[{"roomNumber":"R2","hostelName":"North Hall","capacity":1,"roomType":"Single","feePerSemester":3200.0,"occupants":[]},{"roomNumber":"R1","hostelName":"North Hall","capacity":2,"roomType":"Shared","feePerSemester":2500.0,"occupants":[]}],"applications":{}}
+{
+  "hostels": [
+    { "name": "Oliver Tambo", "code": null, "unitRange": "0-14", "allocationGroup": "Males First Entering" },
+    { "name": "Robert Sobukwe", "code": null, "unitRange": "1-4", "allocationGroup": "Males First Entering" },
+    { "name": "Josephine Moshobane", "code": null, "unitRange": "1-8", "allocationGroup": "Females First Entering" },
+    { "name": "Onkgopotse Tiro", "code": null, "unitRange": "1-5", "allocationGroup": "Females First Entering" },
+    { "name": "Madiba Heights", "code": "MBA", "unitRange": null, "allocationGroup": "Males Undergraduates" },
+    { "name": "Tsietsi Mashinini", "code": "MBD", "unitRange": null, "allocationGroup": "Males Undergraduates" },
+    { "name": "Kofifi", "code": "MBE", "unitRange": null, "allocationGroup": "Males Undergraduates" },
+    { "name": "Lilian Ngoyi", "code": "MBF", "unitRange": null, "allocationGroup": "Males Undergraduates" },
+    { "name": "Cuito Cuanavale", "code": "MBG", "unitRange": null, "allocationGroup": "Males Undergraduates" },
+    { "name": "Khotso House", "code": "MBK", "unitRange": null, "allocationGroup": "Undergraduates - Mixed" },
+    { "name": "Somafco South", "code": "MBL(S)", "unitRange": null, "allocationGroup": "Males Undergraduates" },
+    { "name": "South Plattelands", "code": "MA-MP", "unitRange": null, "allocationGroup": "Males Undergraduates - Disability" },
+    { "name": "Amilcar Cabral", "code": "VJ", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Che Guevara", "code": "VK", "unitRange": null, "allocationGroup": "Undergraduates - Mixed" },
+    { "name": "Agostinho Neto", "code": "MBJ", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Somafco North", "code": "MBL(N)", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Khanya House", "code": "VA", "unitRange": null, "allocationGroup": "Females Undergraduates - Disability" },
+    { "name": "Shaka House", "code": "VB", "unitRange": null, "allocationGroup": "Females Undergraduates - Disability" },
+    { "name": "Hector Peterson", "code": "VC", "unitRange": null, "allocationGroup": "Females Undergraduates - Disability" },
+    { "name": "Sekhukhune House", "code": "VD", "unitRange": null, "allocationGroup": "Females Undergraduates - Disability" },
+    { "name": "Ellen Khuzwayo", "code": "VE", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Barnard Ncube", "code": "VG", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Martin Luther King", "code": "VH", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Frederick Engels", "code": "VI", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Samora Machel", "code": "VL", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Chris Hani", "code": "VN", "unitRange": null, "allocationGroup": "Females Undergraduates" },
+    { "name": "Kwame Nkurumah", "code": "MBB", "unitRange": null, "allocationGroup": "Mix Honours Postgraduates" },
+    { "name": "Steve Biko Hall", "code": "MBC", "unitRange": null, "allocationGroup": "Mix Honours Postgraduates" },
+    { "name": "Anton Lembede", "code": "MBI", "unitRange": null, "allocationGroup": "Mix Honours Postgraduates" },
+    { "name": "Getrude Shope", "code": "VF", "unitRange": null, "allocationGroup": "Mix Honours Postgraduates" },
+    { "name": "Post Graduate Res", "code": "MBH", "unitRange": null, "allocationGroup": "Mix Masters and PhD" }
+  ]
+}

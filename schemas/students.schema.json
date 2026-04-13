@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smart-campus.local/schemas/students.schema.json",
+  "title": "Students Data",
+  "type": "object",
+  "required": ["students"],
+  "additionalProperties": false,
+  "properties": {
+    "students": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "studentNumber",
+          "name",
+          "password",
+          "gender",
+          "department",
+          "year",
+          "email",
+          "phone",
+          "enrolledCourses",
+          "borrowedBooks",
+          "hostelRoom",
+          "registrationDate"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "studentNumber": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "password": { "type": "string", "minLength": 1 },
+          "gender": { "type": "string", "minLength": 1 },
+          "department": { "type": "string", "minLength": 1 },
+          "year": { "type": "integer", "minimum": 1, "maximum": 10 },
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "enrolledCourses": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "borrowedBooks": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "hostelRoom": { "type": ["string", "null"] },
+          "registrationDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        }
+      }
+    }
+  }
+}

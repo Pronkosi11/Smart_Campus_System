@@ -4,6 +4,7 @@ import datastructures.CustomArrayList;
 import java.time.LocalDate;
 
 public class Student extends User {
+    private String gender;
     private String department;
     private int year;
     private String email;
@@ -13,9 +14,10 @@ public class Student extends User {
     private String hostelRoom;
     private LocalDate registrationDate;
 
-    public Student(String id, String name, String password, String department,
+    public Student(String studentNumber, String name, String password, String gender, String department,
                    int year, String email, String phone) {
-        super(id, name, password, "STUDENT");
+        super(studentNumber, name, password, "STUDENT");
+        this.gender = gender;
         this.department = department;
         this.year = year;
         this.email = email;
@@ -27,6 +29,12 @@ public class Student extends User {
     }
 
     // Getters and Setters
+    public String getStudentNumber() { return getId(); }
+    public void setStudentNumber(String studentNumber) { setId(studentNumber); }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
 
@@ -74,7 +82,7 @@ public class Student extends User {
 
     @Override
     public String toString() {
-        return String.format("Student [ID: %s, Name: %s, Dept: %s, Year: %d, Courses: %d]",
-                id, name, department, year, enrolledCourses.size());
+        return String.format("Student [Student Number: %s, Name: %s, Gender: %s, Dept: %s, Year: %d, Courses: %d]",
+                getStudentNumber(), name, gender, department, year, enrolledCourses.size());
     }
 }
