@@ -3,10 +3,10 @@ package ui;
 import model.Admin;
 import model.Student;
 import model.User;
-import service.EventBookingModuleService;
-import service.HelpDeskModuleService;
-import service.HostelModuleService;
-import service.LibraryModuleService;
+import service.EventService;
+import service.HelpDeskService;
+import service.HostelService;
+import service.LibraryService;
 import service.LoginService;
 import service.CourseService;
 import service.StudentService;
@@ -23,10 +23,10 @@ public class ConsoleUI {
 
     private final StudentService studentService = StudentService.getInstance();
     private final CourseService courseService = CourseService.getInstance();
-    private final LibraryModuleService libraryModuleService = LibraryModuleService.getInstance();
-    private final HostelModuleService hostelModuleService = HostelModuleService.getInstance();
-    private final HelpDeskModuleService helpDeskModuleService = HelpDeskModuleService.getInstance();
-    private final EventBookingModuleService eventBookingModuleService = EventBookingModuleService.getInstance();
+    private final LibraryService libraryService = LibraryService.getInstance();
+    private final HostelService hostelService = HostelService.getInstance();
+    private final HelpDeskService helpDeskService = HelpDeskService.getInstance();
+    private final EventService eventService = EventService.getInstance();
 
     public void start() {
         int choice;
@@ -129,16 +129,16 @@ public class ConsoleUI {
                     courseService.showAdminCoursesMenu(box);
                     break;
                 case 3:
-                    box.info(libraryModuleService.getStatusMessage());
+                    box.info(libraryService.getAdminStatusMessage());
                     break;
                 case 4:
-                    box.info(hostelModuleService.getStatusMessage());
+                    box.info(hostelService.getAdminStatusMessage());
                     break;
                 case 5:
-                    box.info(helpDeskModuleService.getStatusMessage());
+                    box.info(helpDeskService.getAdminStatusMessage());
                     break;
                 case 6:
-                    box.info(eventBookingModuleService.getStatusMessage());
+                    box.info(eventService.getAdminStatusMessage());
                     break;
                 case 7:
                     box.info("Logging out...");
@@ -162,16 +162,16 @@ public class ConsoleUI {
                     courseService.showStudentCourseRegistration(box, student);
                     break;
                 case 3:
-                    box.info("Library Services is not implemented in this phase.");
+                    box.info(libraryService.getStudentStatusMessage());
                     break;
                 case 4:
-                    box.info("Hostel Application is not implemented in this phase.");
+                    box.info(hostelService.getStudentStatusMessage());
                     break;
                 case 5:
-                    box.info("Help Desk Ticket is not implemented in this phase.");
+                    box.info(helpDeskService.getStudentStatusMessage());
                     break;
                 case 6:
-                    box.info("Event Booking is not implemented in this phase.");
+                    box.info(eventService.getStudentStatusMessage());
                     break;
                 case 7:
                     box.info("Logging out...");
