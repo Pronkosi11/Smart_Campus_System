@@ -2,7 +2,7 @@
 
 
 
-# Smart Campus Management System - Technical Design Document
+# Technical Design Document
 ## 1. Overview
 The Smart Campus Management System is a comprehensive Java-based console application designed to streamline campus operations for educational institutions. The system provides role-based access for administrators and students, enabling efficient management of student records, course registration, library resources, hostel allocation, help-desk support, and event bookings.
 
@@ -429,6 +429,73 @@ Use this order so dependencies are handled first and integration is easier:
 ║  7. Logout                             ║
 ╚════════════════════════════════════════╝
 ```
+
+### 5.3 Service and Model Implementation Guide (By Team)
+This project now follows a service-first flow: `ConsoleUI` should call service methods, and each service owns its module behavior.
+
+#### A) Implemented reference services (use as pattern)
+1. **`StudentService` (reference)**
+   - Owns CRUD + student module flow methods.
+   - Key methods: `showAdminStudentsMenu(...)`, `showStudentProfile(...)`, `addStudent(...)`, `deleteStudent(...)`.
+   - Model dependency: `Student`.
+   - Persistence dependency: `DataPersistence.saveStudents(...)`.
+
+2. **`CourseService` (reference)**
+   - Owns course CRUD + registration flow.
+   - Key methods: `showAdminCoursesMenu(...)`, `showStudentCourseRegistration(...)`, `enrollStudent(...)`, `dropStudent(...)`.
+   - Model dependency: `Course` + `Student`.
+   - Persistence dependency: `DataPersistence.saveCourses(...)`.
+
+#### B) Services each group should implement next
+Use the same structure as `StudentService`/`CourseService`: business methods + module UI-flow entry methods callable from `ConsoleUI`.
+
+1. **`LibraryService`**
+   - Add methods:
+     - `showAdminLibraryMenu(BoxUI box)`
+     - `showStudentLibraryMenu(BoxUI box, Student student)`
+     - `addBook(...)`, `removeBook(...)`, `borrowBook(...)`, `returnBook(...)`
+   - Backing data: `data/books.json` + `schemas/books.schema.json`
+   - Data structures: `CustomHashMap<String, LibraryBook>`, `CustomQueue<String>` for waiting list
+
+2. **`HostelService`**
+   - Add methods:
+     - `showAdminHostelMenu(BoxUI box)`
+     - `showStudentHostelMenu(BoxUI box, Student student)`
+     - `addRoom(...)`, `updateRoom(...)`, `applyForRoom(...)`, `vacateRoom(...)`
+   - Backing data: `data/hostels.json` + `schemas/hostels.schema.json`
+   - Data structures: `CustomHashMap<String, HostelRoom>`
+
+3. **`HelpDeskService`**
+   - Add methods:
+     - `showAdminHelpDeskMenu(BoxUI box)`
+     - `showStudentHelpDeskMenu(BoxUI box, Student student)`
+     - `submitTicket(...)`, `getNextTicket(...)`, `updateTicketStatus(...)`
+   - Backing data: `data/tickets.json` + `schemas/tickets.schema.json`
+   - Data structures: `CustomQueue<Ticket>`, `CustomStack<String>` for status history
+
+4. **`EventService`**
+   - Add methods:
+     - `showAdminEventMenu(BoxUI box)`
+     - `showStudentEventMenu(BoxUI box, Student student)`
+     - `createEvent(...)`, `updateEvent(...)`, `registerForEvent(...)`, `cancelRegistration(...)`
+   - Backing data: `data/events.json` + `schemas/events.schema.json`
+   - Data structures: `CustomArrayList<Event>`
+
+#### C) Model implementation checklist (per file)
+For each planned model (`LibraryBook`, `HostelRoom`, `Ticket`, `Event`):
+- Add core fields shown in Section 4.2
+- Add constructor + getters/setters
+- Add helper methods needed by service logic (e.g., queue/stack operations)
+- Add readable `toString()` for boxed UI display
+- Ensure JSON serialization compatibility with `DataPersistence`
+
+#### D) Console integration rule
+`ConsoleUI` must only route menus and call service entry methods, e.g.:
+- `libraryService.showAdminLibraryMenu(box)`
+- `hostelService.showStudentHostelMenu(box, student)`
+- `helpDeskService.showAdminHelpDeskMenu(box)`
+- `eventService.showStudentEventMenu(box, student)`
+
 ---
 
 ## 6. Security Considerations
