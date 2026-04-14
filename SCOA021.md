@@ -11,7 +11,7 @@ This document outlines the technical architecture, data models, implementation s
 ---
 
 ## 2. Goals and Non-Goals
-### 2.1 Goals
+### 2.1 Goals for this
 - **Role-Based Authentication**: Implement secure login system distinguishing between admin and student users with appropriate access controls
 - **Modular Architecture**: Design a clean, maintainable package structure separating concerns across authentication, modules, models, data structures, and utilities
 - **Custom Data Structure Implementation**: Demonstrate understanding of fundamental data structures by implementing custom versions of ArrayList, LinkedList, HashMap, TreeMap, Queue, and Stack
