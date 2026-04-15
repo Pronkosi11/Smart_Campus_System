@@ -1,1 +1,20 @@
-{"pending":[],"resolved":[],"ticketCounter":1000}
+{
+  "pending": [],
+  "resolved": [
+    {
+      "id": "TKT-1001",
+      "studentNumber": "202356843",
+      "subject": "Help with wifi",
+      "description": "my internet in eduroam does not connect with eduroam, i used the same credentias i used on phone now but they wont work on my linux desktop i don't know",
+      "status": "closed",
+      "createdAt": "2026-04-15T11:53:54.118415600",
+      "resolvedAt": "2026-04-15T12:00:08.261006400",
+      "statusHistory": [
+        "2026-04-15T11:53:54.1184156 -> open",
+        "2026-04-15T11:59:56.3025243 -> in-progress",
+        "2026-04-15T12:00:08.2610064 -> closed"
+      ]
+    }
+  ],
+  "ticketCounter": 1001
+}

@@ -135,7 +135,7 @@ public class ConsoleUI {
                     box.info(hostelService.getAdminStatusMessage());
                     break;
                 case 5:
-                    box.info(helpDeskService.getAdminStatusMessage());
+                    helpDeskService.showAdminHelpDeskMenu(box);
                     break;
                 case 6:
                     box.info(eventService.getAdminStatusMessage());
@@ -168,7 +168,7 @@ public class ConsoleUI {
                     box.info(hostelService.getStudentStatusMessage());
                     break;
                 case 5:
-                    box.info(helpDeskService.getStudentStatusMessage());
+                    helpDeskService.showStudentHelpDeskMenu(box, student);
                     break;
                 case 6:
                     box.info(eventService.getStudentStatusMessage());

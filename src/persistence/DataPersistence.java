@@ -3,8 +3,10 @@ package persistence;
 import datastructures.CustomArrayList;
 import datastructures.CustomHashMap;
 import datastructures.CustomQueue;
+import datastructures.CustomStack;
 import model.*;
 import service.CourseService;
+import service.HelpDeskService;
 
 import service.LoginService;
 import service.StudentService;
@@ -46,11 +48,18 @@ public final class DataPersistence {
         validateConfiguredDataFiles();
         loadStudents();
         loadCourses();
+        loadTickets();
     }
 
     public static void saveAllData() {
         saveStudents(StudentService.getInstance().getStudentsMap());
         saveCourses(CourseService.getInstance().getCoursesMap());
+        HelpDeskService helpDeskService = HelpDeskService.getInstance();
+        saveTickets(
+                helpDeskService.getPendingTicketsSnapshotAsQueue(),
+                helpDeskService.getResolvedTickets(),
+                helpDeskService.getTicketCounter()
+        );
     }
 
     // --- Students ---
@@ -253,6 +262,118 @@ public final class DataPersistence {
 
     // --- Tickets ---
 
+    public static void saveTickets(CustomQueue<Ticket> pending, CustomArrayList<Ticket> resolved, int ticketCounter) {
+        try {
+            List<Object> pendingArr = new ArrayList<>();
+            List<Object> resolvedArr = new ArrayList<>();
+
+            if (pending != null) {
+                CustomQueue<Ticket> temp = new CustomQueue<>();
+                while (!pending.isEmpty()) {
+                    Ticket t = pending.dequeue();
+                    pendingArr.add(ticketToMap(t));
+                    temp.enqueue(t);
+                }
+                while (!temp.isEmpty()) {
+                    pending.enqueue(temp.dequeue());
+                }
+            }
+
+            if (resolved != null) {
+                for (int i = 0; i < resolved.size(); i++) {
+                    resolvedArr.add(ticketToMap(resolved.get(i)));
+                }
+            }
+
+            Map<String, Object> root = new LinkedHashMap<>();
+            root.put("pending", pendingArr);
+            root.put("resolved", resolvedArr);
+            root.put("ticketCounter", Math.max(ticketCounter, 1000));
+            JsonFileHandler.writeFile(TICKETS_FILE, JsonFileHandler.stringifyObject(root));
+        } catch (IOException e) {
+            System.err.println("Failed to save tickets: " + e.getMessage());
+        }
+    }
+
+    private static Map<String, Object> ticketToMap(Ticket t) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", t.getId());
+        m.put("studentNumber", t.getStudentNumber());
+        m.put("subject", t.getSubject());
+        m.put("description", t.getDescription());
+        m.put("status", t.getStatus());
+        m.put("createdAt", t.getCreatedAt() == null ? null : t.getCreatedAt().toString());
+        m.put("resolvedAt", t.getResolvedAt() == null ? null : t.getResolvedAt().toString());
+        m.put("statusHistory", stackToJsonList(t.getStatusHistory()));
+        return m;
+    }
+
+    private static void loadTickets() {
+        try {
+            String raw = JsonFileHandler.readFile(TICKETS_FILE);
+            if (raw == null || raw.isBlank()) {
+                return;
+            }
+            Map<String, Object> root = JsonFileHandler.parseObject(raw);
+            CustomQueue<Ticket> pending = new CustomQueue<>();
+            CustomArrayList<Ticket> resolved = new CustomArrayList<>();
+
+            List<Map<String, Object>> pendingRows = getObjectList(root, "pending");
+            List<Map<String, Object>> resolvedRows = getObjectList(root, "resolved");
+            for (Map<String, Object> row : pendingRows) {
+                Ticket t = ticketFromMap(row);
+                if (t != null) {
+                    pending.enqueue(t);
+                }
+            }
+            for (Map<String, Object> row : resolvedRows) {
+                Ticket t = ticketFromMap(row);
+                if (t != null) {
+                    resolved.add(t);
+                }
+            }
+
+            int counter = getInt(root, "ticketCounter", 1000);
+            HelpDeskService.getInstance().restoreTicketData(pending, resolved, counter);
+        } catch (Exception e) {
+            System.err.println("Failed to load tickets: " + e.getMessage());
+        }
+    }
+
+    private static Ticket ticketFromMap(Map<String, Object> row) {
+        String id = getStr(row, "id", null);
+        String studentNumber = getStr(row, "studentNumber", null);
+        String subject = getStr(row, "subject", null);
+        String description = getStr(row, "description", null);
+        if (id == null || studentNumber == null || subject == null || description == null) {
+            return null;
+        }
+
+        LocalDateTime createdAt = null;
+        String createdRaw = getStr(row, "createdAt", null);
+        if (createdRaw != null && !createdRaw.isBlank()) {
+            createdAt = LocalDateTime.parse(createdRaw);
+        }
+
+        LocalDateTime resolvedAt = null;
+        String resolvedRaw = getStr(row, "resolvedAt", null);
+        if (resolvedRaw != null && !resolvedRaw.isBlank() && !"null".equalsIgnoreCase(resolvedRaw)) {
+            resolvedAt = LocalDateTime.parse(resolvedRaw);
+        }
+
+        CustomStack<String> history = jsonListToStack(row.get("statusHistory"));
+        return new Ticket(
+                id,
+                studentNumber,
+                subject,
+                description,
+                getStr(row, "status", Ticket.STATUS_OPEN),
+                createdAt,
+                resolvedAt,
+                history
+        );
+    }
+
 
 
     // --- Events ---
@@ -280,6 +401,36 @@ public final class DataPersistence {
         for (Object x : (List<?>) o) {
             if (x != null) {
                 out.add(x.toString());
+            }
+        }
+        return out;
+    }
+
+    private static List<Object> stackToJsonList(CustomStack<String> stack) {
+        List<Object> out = new ArrayList<>();
+        if (stack == null || stack.isEmpty()) {
+            return out;
+        }
+        CustomStack<String> temp = new CustomStack<>();
+        while (!stack.isEmpty()) {
+            temp.push(stack.pop());
+        }
+        while (!temp.isEmpty()) {
+            String item = temp.pop();
+            out.add(item);
+            stack.push(item);
+        }
+        return out;
+    }
+
+    private static CustomStack<String> jsonListToStack(Object raw) {
+        CustomStack<String> out = new CustomStack<>();
+        if (!(raw instanceof List)) {
+            return out;
+        }
+        for (Object item : (List<?>) raw) {
+            if (item != null) {
+                out.push(item.toString());
             }
         }
         return out;
