@@ -3,17 +3,60 @@ package model;
 import datastructures.CustomArrayList;
 import java.time.LocalDate;
 
+/**
+ * Student - Student Entity Model
+ * 
+ * This class represents a student in the Smart Campus Management System.
+ * It extends the base User class and adds student-specific attributes and functionality.
+ * 
+ * Key Features:
+ * - Personal information management (demographics, contact details)
+ * - Academic information (department, year of study)
+ * - Course enrollment tracking
+ * - Library book borrowing management
+ * - Hostel room assignment
+ * - Registration date tracking
+ * 
+ * The class provides methods for:
+ * - Course enrollment and dropping
+ * - Book borrowing and returning
+ * - Profile information access
+ * - String representation for display purposes
+ * 
+ * This model integrates with various services including StudentService,
+ * CourseService, LibraryService, and HostelService.
+ */
 public class Student extends User {
-    private String gender;
-    private String department;
-    private int year;
-    private String email;
-    private String phone;
-    private CustomArrayList<String> enrolledCourses;
-    private CustomArrayList<String> borrowedBooks;
-    private String hostelRoom;
-    private LocalDate registrationDate;
 
+    // ========== PERSONAL INFORMATION ==========
+    private String gender;          // Student's gender (Male/Female/Other/Unspecified)
+    private String department;      // Academic department (e.g., Computer Science, Engineering)
+    private int year;              // Year of study (1-4)
+    private String email;          // Contact email address
+    private String phone;          // Contact phone number
+
+    // ========== ACADEMIC & SERVICE TRACKING ==========
+    private CustomArrayList<String> enrolledCourses;  // List of course codes student is enrolled in
+    private CustomArrayList<String> borrowedBooks;    // List of book IDs currently borrowed from library
+    private String hostelRoom;                         // Assigned hostel room (null if not assigned)
+    private LocalDate registrationDate;               // Date when student registered in the system
+
+    /**
+     * Constructs a new Student with the provided information.
+     * 
+     * This constructor initializes a student with all required personal and academic
+     * information. It automatically sets up empty collections for courses and books,
+     * sets the registration date to the current date, and leaves hostel room unassigned.
+     * 
+     * @param studentNumber Unique student identifier (used as login username)
+     * @param name Full name of the student
+     * @param password Login password for authentication
+     * @param gender Student's gender (Male/Female/Other/Unspecified)
+     * @param department Academic department the student belongs to
+     * @param year Year of study (typically 1-4)
+     * @param email Contact email address
+     * @param phone Contact phone number
+     */
     public Student(String studentNumber, String name, String password, String gender, String department,
                    int year, String email, String phone) {
         super(studentNumber, name, password, "STUDENT");
@@ -24,11 +67,11 @@ public class Student extends User {
         this.phone = phone;
         this.enrolledCourses = new CustomArrayList<>();
         this.borrowedBooks = new CustomArrayList<>();
-        this.hostelRoom = null;
-        this.registrationDate = LocalDate.now();
+        this.hostelRoom = null;  // Initially no room assigned
+        this.registrationDate = LocalDate.now();  // Set to current date
     }
 
-    // Getters and Setters
+    // ========== GETTERS AND SETTERS ==========
     public String getStudentNumber() { return getId(); }
     public void setStudentNumber(String studentNumber) { setId(studentNumber); }
 
@@ -60,26 +103,73 @@ public class Student extends User {
         this.registrationDate = registrationDate != null ? registrationDate : LocalDate.now();
     }
 
+    // ========== COURSE MANAGEMENT METHODS ==========
+
+    /**
+     * Enrolls the student in a course if not already enrolled.
+     * 
+     * This method adds a course code to the student's enrolled courses list,
+     * but only if the student is not already enrolled in that course.
+     * Prevents duplicate enrollments.
+     * 
+     * @param courseCode The course code to enroll in (e.g., "CS101", "MATH201")
+     */
     public void enrollCourse(String courseCode) {
         if (!enrolledCourses.contains(courseCode)) {
             enrolledCourses.add(courseCode);
         }
     }
 
+    /**
+     * Drops the student from a course.
+     * 
+     * This method removes a course code from the student's enrolled courses list.
+     * If the student is not enrolled in the course, no action is taken.
+     * 
+     * @param courseCode The course code to drop from
+     */
     public void dropCourse(String courseCode) {
         enrolledCourses.remove(courseCode);
     }
 
+    // ========== LIBRARY MANAGEMENT METHODS ==========
+
+    /**
+     * Records that the student has borrowed a book from the library.
+     * 
+     * This method adds a book ID to the student's borrowed books list,
+     * but only if the book is not already recorded as borrowed.
+     * Prevents duplicate borrowing records.
+     * 
+     * @param bookId The unique identifier of the borrowed book
+     */
     public void borrowBook(String bookId) {
         if (!borrowedBooks.contains(bookId)) {
             borrowedBooks.add(bookId);
         }
     }
 
+    /**
+     * Records that the student has returned a book to the library.
+     * 
+     * This method removes a book ID from the student's borrowed books list.
+     * If the book is not in the borrowed list, no action is taken.
+     * 
+     * @param bookId The unique identifier of the returned book
+     */
     public void returnBook(String bookId) {
         borrowedBooks.remove(bookId);
     }
 
+    /**
+     * Returns a formatted string representation of the student for display purposes.
+     * 
+     * This method provides a concise summary of the student including their
+     * student number, name, gender, department, year, and number of enrolled courses.
+     * Used in lists and summary displays throughout the UI.
+     * 
+     * @return A formatted string containing key student information
+     */
     @Override
     public String toString() {
         return String.format("Student [Student Number: %s, Name: %s, Gender: %s, Dept: %s, Year: %d, Courses: %d]",

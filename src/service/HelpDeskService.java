@@ -11,8 +11,11 @@ import ui.BoxUI;
 public class HelpDeskService {
     private static HelpDeskService instance;
 
+    // Queue keeps open/in-progress tickets in FIFO order.
     private final CustomQueue<Ticket> pendingTickets;
+    // Closed tickets are archived here for history and reporting.
     private final CustomArrayList<Ticket> resolvedTickets;
+    // Counter used to generate readable IDs (TKT-1001, TKT-1002, ...).
     private int ticketCounter;
 
     private HelpDeskService() {
@@ -28,24 +31,35 @@ public class HelpDeskService {
         return instance;
     }
 
+    /**
+     * Returns a short message shown from the admin dashboard.
+     */
     public String getAdminStatusMessage() {
         return "Help Desk module is available. Use option 5 to manage tickets.";
     }
 
+    /**
+     * Returns a short message shown from the student portal.
+     */
     public String getStudentStatusMessage() {
         return "Help Desk module is available. Use option 5 to submit/view your tickets.";
     }
 
+    /**
+     * Admin entry-point for the Help Desk module.
+     * Renders the admin ticket menu and dispatches actions.
+     */
     public void showAdminHelpDeskMenu(BoxUI box) {
         int choice;
         do {
+            box.info("Admin Help Desk: review student issues, update their status, and close resolved tickets.");
             box.printMenu("HELP DESK - ADMIN", new String[]{
-                    "1. View Pending Tickets",
-                    "2. Process Next Ticket",
-                    "3. View Tickets by Status",
-                    "4. Back"
+                    "1. View Pending Tickets (FIFO processing order)",
+                    "2. Process Next Ticket (update workflow status)",
+                    "3. View Tickets by Status (open/in-progress/closed)",
+                    "4. Back to Admin Dashboard"
             });
-            choice = box.readInt("Choose option: ", 1, 4);
+            choice = box.readInt("Choose an admin option: ", 1, 4);
             switch (choice) {
                 case 1:
                     displayPendingTickets(box);
@@ -64,16 +78,21 @@ public class HelpDeskService {
         } while (choice != 4);
     }
 
+    /**
+     * Student entry-point for the Help Desk module.
+     * Renders the student ticket menu and dispatches actions for the logged-in student.
+     */
     public void showStudentHelpDeskMenu(BoxUI box, Student student) {
         int choice;
         do {
+            box.info("Student Help Desk: submit new issues and track updates to your existing tickets.");
             box.printMenu("HELP DESK - STUDENT", new String[]{
-                    "1. Submit Ticket",
-                    "2. View My Tickets",
-                    "3. View Ticket History",
-                    "4. Back"
+                    "1. Submit Ticket (create a new support request)",
+                    "2. View My Tickets (current status overview)",
+                    "3. View Ticket History (status timeline)",
+                    "4. Back to Student Portal"
             });
-            choice = box.readInt("Choose option: ", 1, 4);
+            choice = box.readInt("Choose a student option: ", 1, 4);
             switch (choice) {
                 case 1:
                     submitTicketFlow(box, student);
@@ -92,17 +111,24 @@ public class HelpDeskService {
         } while (choice != 4);
     }
 
+    /**
+     * Creates and queues a new ticket.
+     * Validation is intentionally simple for console UX: all fields must be non-empty.
+     */
     public Ticket submitTicket(String studentNumber, String subject, String description) {
-        if (studentNumber == null || studentNumber.isBlank() || subject == null || subject.isBlank()
-                || description == null || description.isBlank()) {
+        if (isBlank(studentNumber) || isBlank(subject) || isBlank(description)) {
             return null;
         }
         Ticket t = new Ticket(nextTicketId(), studentNumber.trim(), subject.trim(), description.trim());
-        pendingTickets.enqueue(t);
+        pendingTickets.enqueue(t); // New tickets always join queue tail.
         DataPersistence.saveTickets(pendingTickets, resolvedTickets, ticketCounter);
         return t;
     }
 
+    /**
+     * Returns the next ticket to process without removing it.
+     * This keeps FIFO order visible to the admin before status update.
+     */
     public Ticket getNextTicket() {
         if (pendingTickets.isEmpty()) {
             return null;
@@ -110,6 +136,10 @@ public class HelpDeskService {
         return pendingTickets.peek();
     }
 
+    /**
+     * Updates a ticket status and archives it when moved to "closed".
+     * Closed tickets are removed from the pending queue and moved to resolved storage.
+     */
     public boolean updateTicketStatus(String ticketId, String status) {
         Ticket t = findTicketById(ticketId);
         if (t == null || !Ticket.isValidStatus(status)) {
@@ -126,6 +156,10 @@ public class HelpDeskService {
         return true;
     }
 
+    /**
+     * Returns a merged view of pending + resolved tickets.
+     * Pending tickets are copied from queue snapshot to avoid mutating queue state.
+     */
     public CustomArrayList<Ticket> getAllTickets() {
         CustomArrayList<Ticket> all = snapshotPendingTickets();
         for (int i = 0; i < resolvedTickets.size(); i++) {
@@ -134,6 +168,9 @@ public class HelpDeskService {
         return all;
     }
 
+    /**
+     * Filters all tickets by one of the allowed statuses.
+     */
     public CustomArrayList<Ticket> getTicketsByStatus(String status) {
         CustomArrayList<Ticket> filtered = new CustomArrayList<>();
         if (!Ticket.isValidStatus(status)) {
@@ -150,9 +187,12 @@ public class HelpDeskService {
         return filtered;
     }
 
+    /**
+     * Returns all tickets created by a single student.
+     */
     public CustomArrayList<Ticket> getStudentTickets(String studentNumber) {
         CustomArrayList<Ticket> out = new CustomArrayList<>();
-        if (studentNumber == null || studentNumber.isBlank()) {
+        if (isBlank(studentNumber)) {
             return out;
         }
         String target = studentNumber.trim();
@@ -166,6 +206,10 @@ public class HelpDeskService {
         return out;
     }
 
+    /**
+     * Returns a ticket's status history stack.
+     * Returns null when ticket does not exist.
+     */
     public CustomStack<String> getTicketHistory(String ticketId) {
         Ticket t = findTicketById(ticketId);
         if (t == null) {
@@ -174,6 +218,9 @@ public class HelpDeskService {
         return t.getStatusHistory();
     }
 
+    /**
+     * Rehydrates service state from persistence during startup.
+     */
     public void restoreTicketData(CustomQueue<Ticket> pending, CustomArrayList<Ticket> resolved, int counter) {
         pendingTickets.clear();
         resolvedTickets.clear();
@@ -190,6 +237,10 @@ public class HelpDeskService {
         ticketCounter = Math.max(counter, 1000);
     }
 
+    /**
+     * Returns a copy of pending tickets in queue form.
+     * Internally rotates through a temp queue to preserve original queue order.
+     */
     public CustomQueue<Ticket> getPendingTicketsSnapshotAsQueue() {
         CustomQueue<Ticket> copy = new CustomQueue<>();
         CustomQueue<Ticket> temp = new CustomQueue<>();
@@ -204,22 +255,34 @@ public class HelpDeskService {
         return copy;
     }
 
+    /**
+     * Exposes resolved ticket archive.
+     */
     public CustomArrayList<Ticket> getResolvedTickets() {
         return resolvedTickets;
     }
 
+    /**
+     * Returns current ID counter for persistence.
+     */
     public int getTicketCounter() {
         return ticketCounter;
     }
 
+    /**
+     * Generates next ticket reference number.
+     */
     private String nextTicketId() {
         ticketCounter++;
         return "TKT-" + ticketCounter;
     }
 
+    /**
+     * Student flow to submit a ticket from UI prompts.
+     */
     private void submitTicketFlow(BoxUI box, Student student) {
-        String subject = box.prompt("Subject: ");
-        String description = box.prompt("Description: ");
+        String subject = box.prompt("Subject (short title): ");
+        String description = box.prompt("Description (full details of the issue): ");
         Ticket t = submitTicket(student.getStudentNumber(), subject, description);
         if (t == null) {
             box.error("Subject and description are required.");
@@ -228,6 +291,9 @@ public class HelpDeskService {
         box.success("Ticket submitted. Reference: " + t.getId());
     }
 
+    /**
+     * Prints all tickets owned by the current student.
+     */
     private void displayStudentTickets(BoxUI box, Student student) {
         CustomArrayList<Ticket> tickets = getStudentTickets(student.getStudentNumber());
         if (tickets.isEmpty()) {
@@ -242,8 +308,12 @@ public class HelpDeskService {
         box.endSection();
     }
 
+    /**
+     * Shows status history for one student-owned ticket.
+     * History is copied from stack so original order/state remains unchanged.
+     */
     private void displayTicketHistoryFlow(BoxUI box, Student student) {
-        String ticketId = box.prompt("Ticket ID: ");
+        String ticketId = box.prompt("Ticket ID (example: TKT-1001): ");
         Ticket t = findTicketById(ticketId);
         if (t == null || !student.getStudentNumber().equalsIgnoreCase(t.getStudentNumber())) {
             box.error("Ticket not found.");
@@ -257,6 +327,9 @@ public class HelpDeskService {
         box.endSection();
     }
 
+    /**
+     * Prints current pending queue in processing order.
+     */
     private void displayPendingTickets(BoxUI box) {
         CustomArrayList<Ticket> pending = snapshotPendingTickets();
         if (pending.isEmpty()) {
@@ -271,6 +344,9 @@ public class HelpDeskService {
         box.endSection();
     }
 
+    /**
+     * Admin flow that shows the next ticket and allows status update.
+     */
     private void processNextTicket(BoxUI box) {
         Ticket next = getNextTicket();
         if (next == null) {
@@ -286,12 +362,12 @@ public class HelpDeskService {
         box.endSection();
 
         box.printMenu("UPDATE STATUS", new String[]{
-                "1. open",
-                "2. in-progress",
-                "3. closed",
+                "1. open (ticket received and waiting)",
+                "2. in-progress (currently being handled)",
+                "3. closed (issue fully resolved)",
                 "4. Cancel"
         });
-        int statusOption = box.readInt("Choose option: ", 1, 4);
+        int statusOption = box.readInt("Choose the new status: ", 1, 4);
         if (statusOption == 4) {
             return;
         }
@@ -305,34 +381,54 @@ public class HelpDeskService {
         }
     }
 
+    /**
+     * Admin flow for filtering tickets by status and printing results.
+     */
     private void displayTicketsByStatus(BoxUI box) {
         box.printMenu("FILTER TICKETS", new String[]{
-                "1. open",
-                "2. in-progress",
-                "3. closed",
+                "1. open (new/unhandled)",
+                "2. in-progress (actively worked on)",
+                "3. closed (resolved)",
                 "4. Back"
         });
-        int option = box.readInt("Choose option: ", 1, 4);
+
+        int option = box.readInt("Choose a status filter: ", 1, 4);
         if (option == 4) {
             return;
         }
-        String status = option == 1 ? Ticket.STATUS_OPEN
-                : option == 2 ? Ticket.STATUS_IN_PROGRESS : Ticket.STATUS_CLOSED;
-        CustomArrayList<Ticket> tickets = getTicketsByStatus(status);
+
+        String selectedStatus = mapStatusOption(option);
+        CustomArrayList<Ticket> tickets = getTicketsByStatus(selectedStatus);
         if (tickets.isEmpty()) {
-            box.info("No tickets with status '" + status + "'.");
+            box.info("No tickets with status '" + selectedStatus + "'.");
             return;
         }
-        box.printSection("TICKETS - " + status.toUpperCase());
+
+        box.printSection("TICKETS - " + selectedStatus.toUpperCase());
         for (int i = 0; i < tickets.size(); i++) {
-            Ticket t = tickets.get(i);
-            box.line((i + 1) + ". " + t.getId() + " | " + t.getSubject() + " | " + t.getStudentNumber());
+            Ticket ticket = tickets.get(i);
+            String row = (i + 1) + ". " + ticket.getId()
+                    + " | " + ticket.getSubject()
+                    + " | " + ticket.getStudentNumber();
+            box.line(row);
         }
         box.endSection();
     }
 
+    /**
+     * Maps menu option number to a valid ticket status constant.
+     */
+    private String mapStatusOption(int option) {
+        if (option == 1) return Ticket.STATUS_OPEN;
+        if (option == 2) return Ticket.STATUS_IN_PROGRESS;
+        return Ticket.STATUS_CLOSED;
+    }
+
+    /**
+     * Finds ticket by ID across pending queue and resolved archive.
+     */
     private Ticket findTicketById(String ticketId) {
-        if (ticketId == null || ticketId.isBlank()) {
+        if (isBlank(ticketId)) {
             return null;
         }
         String target = ticketId.trim();
@@ -352,6 +448,9 @@ public class HelpDeskService {
         return null;
     }
 
+    /**
+     * Removes a ticket from pending queue while preserving the order of other tickets.
+     */
     private void removeTicketFromPending(String ticketId) {
         CustomQueue<Ticket> temp = new CustomQueue<>();
         while (!pendingTickets.isEmpty()) {
@@ -365,6 +464,10 @@ public class HelpDeskService {
         }
     }
 
+    /**
+     * Creates a list snapshot of pending queue contents.
+     * Queue is restored to original state after snapshotting.
+     */
     private CustomArrayList<Ticket> snapshotPendingTickets() {
         CustomArrayList<Ticket> copy = new CustomArrayList<>();
         CustomQueue<Ticket> temp = new CustomQueue<>();
@@ -379,6 +482,10 @@ public class HelpDeskService {
         return copy;
     }
 
+    /**
+     * Copies stack entries into a list in top-to-bottom order.
+     * Original stack is restored so caller does not lose history data.
+     */
     private CustomArrayList<String> snapshotStack(CustomStack<String> stack) {
         CustomArrayList<String> out = new CustomArrayList<>();
         CustomStack<String> temp = new CustomStack<>();
@@ -391,5 +498,12 @@ public class HelpDeskService {
             stack.push(temp.pop());
         }
         return out;
+    }
+
+    /**
+     * Utility helper for text field validation.
+     */
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

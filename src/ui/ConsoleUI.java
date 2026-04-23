@@ -14,20 +14,46 @@ import service.StudentService;
 import java.util.Scanner;
 
 /**
- * Top-level menu router. Module-specific UI flows live in dedicated UI classes.
+ * ConsoleUI - Main User Interface Controller
+ * 
+ * This class serves as the primary UI router for the Smart Campus Management System.
+ * It provides the main menu system and coordinates between different service modules.
+ * 
+ * Key responsibilities:
+ * - Display main menu and handle user authentication
+ * - Route users to appropriate dashboards (Admin/Student)
+ * - Coordinate with service classes for business logic
+ * - Provide consistent BoxUI-based interface throughout the application
+ * - Handle user registration and login flows
+ * 
+ * The class uses the BoxUI component to ensure a clean, professional console interface
+ * with proper formatting, input validation, and error handling.
  */
 public class ConsoleUI {
 
+    // Core UI components for user interaction
     private final Scanner scanner = new Scanner(System.in);
     private final BoxUI box = new BoxUI(scanner);
 
-    private final StudentService studentService = StudentService.getInstance();
-    private final CourseService courseService = CourseService.getInstance();
-    private final LibraryService libraryService = LibraryService.getInstance();
-    private final HostelService hostelService = HostelService.getInstance();
-    private final HelpDeskService helpDeskService = HelpDeskService.getInstance();
-    private final EventService eventService = EventService.getInstance();
+    // Service layer instances - using singleton pattern for centralized state management
+    private final StudentService studentService = StudentService.getInstance();      // Handles student CRUD operations and profile management
+    private final CourseService courseService = CourseService.getInstance();        // Manages course catalog and enrollment
+    private final LibraryService libraryService = LibraryService.getInstance();     // Library services (placeholder for future implementation)
+    private final HostelService hostelService = HostelService.getInstance();        // Hostel management (placeholder for future implementation)
+    private final HelpDeskService helpDeskService = HelpDeskService.getInstance();  // Support ticket system (fully implemented)
+    private final EventService eventService = EventService.getInstance();          // Event management (placeholder for future implementation)
 
+    /**
+     * Main application loop that displays the welcome menu and handles user choices.
+     * 
+     * This method provides the primary entry point for user interaction, offering:
+     * - Admin login for administrative functions
+     * - Student login for student portal access
+     * - New student registration
+     * - Clean exit option
+     * 
+     * The loop continues until the user chooses to exit (option 4).
+     */
     public void start() {
         int choice;
         do {
@@ -51,6 +77,12 @@ public class ConsoleUI {
         } while (choice != 4);
     }
 
+    /**
+     * Displays the main welcome menu with system title and available options.
+     * 
+     * This method renders the primary navigation menu using BoxUI formatting,
+     * providing users with clear options for system access and registration.
+     */
     private void printMainMenu() {
         box.printMenu("SMART CAMPUS MANAGEMENT SYSTEM", new String[]{
                 "1. Login as Admin",
@@ -60,6 +92,15 @@ public class ConsoleUI {
         });
     }
 
+    /**
+     * Handles administrator login authentication and routing.
+     * 
+     * This method:
+     * - Prompts for admin username and password
+     * - Validates credentials through LoginService
+     * - Routes successful admin logins to the admin dashboard
+     * - Displays appropriate error messages for failed attempts
+     */
     private void handleLoginAsAdmin() {
         String user = box.prompt("Username: ");
         String pass = box.prompt("Password: ");
@@ -73,6 +114,15 @@ public class ConsoleUI {
         }
     }
 
+    /**
+     * Handles student login authentication and routing.
+     * 
+     * This method:
+     * - Prompts for student number and password
+     * - Validates credentials through LoginService
+     * - Routes successful student logins to the student portal
+     * - Displays appropriate error messages for failed attempts
+     */
     private void handleLoginAsStudent() {
         String studentNumber = box.prompt("Student Number: ");
         String pass = box.prompt("Password: ");
@@ -86,6 +136,16 @@ public class ConsoleUI {
         }
     }
 
+    /**
+     * Handles new student registration process with comprehensive data collection.
+     * 
+     * This method:
+     * - Validates student number uniqueness
+     * - Collects all required student information (name, password, demographics, contact info)
+     * - Provides sensible defaults for optional fields (gender, department)
+     * - Creates and registers the new student through StudentService
+     * - Provides feedback on registration success/failure
+     */
     private void registerStudent() {
         String studentNumber = box.prompt("Student Number: ");
         if (studentNumber.isEmpty()) {
@@ -116,6 +176,19 @@ public class ConsoleUI {
         box.success("Registration successful. You can log in with your student number.");
     }
 
+    /**
+     * Administrator dashboard menu loop that provides access to all admin functions.
+     * 
+     * This method displays the admin dashboard and routes to various administrative modules:
+     * - Student management (view, add, delete students)
+     * - Course management (create, modify courses)
+     * - Library management (placeholder for future implementation)
+     * - Hostel management (placeholder for future implementation)
+     * - Help desk ticket management (fully functional)
+     * - Event management (placeholder for future implementation)
+     * 
+     * The loop continues until the admin chooses to logout (option 7).
+     */
     private void adminMenu() {
         int c;
         do {
@@ -149,6 +222,21 @@ public class ConsoleUI {
         } while (c != 7);
     }
 
+    /**
+     * Student portal menu loop that provides access to all student functions.
+     * 
+     * This method displays the student portal and routes to various student services:
+     * - Profile viewing (personal information display)
+     * - Course registration (enroll/drop courses)
+     * - Library services (placeholder for future implementation)
+     * - Hostel application (placeholder for future implementation)
+     * - Help desk ticket submission and tracking (fully functional)
+     * - Event booking (placeholder for future implementation)
+     * 
+     * The loop continues until the student chooses to logout (option 7).
+     * 
+     * @param student The authenticated student object for personalized access
+     */
     private void studentMenu(Student student) {
         int c;
         do {
@@ -182,6 +270,13 @@ public class ConsoleUI {
         } while (c != 7);
     }
 
+    /**
+     * Displays the administrator dashboard menu with all available admin options.
+     * 
+     * This method renders a clean, formatted menu showing all administrative
+     * functions available in the system, including both implemented and
+     * planned features.
+     */
     private void printAdminDashboard() {
         box.printMenu("ADMIN DASHBOARD", new String[]{
                 "1. Manage Students",
@@ -194,6 +289,13 @@ public class ConsoleUI {
         });
     }
 
+    /**
+     * Displays the student portal menu with all available student options.
+     * 
+     * This method renders a clean, formatted menu showing all student
+     * services available in the system, including both implemented and
+     * planned features.
+     */
     private void printStudentPortal() {
         box.printMenu("STUDENT PORTAL", new String[]{
                 "1. View My Profile",

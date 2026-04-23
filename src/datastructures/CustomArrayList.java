@@ -3,10 +3,37 @@ package datastructures;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * CustomArrayList - Dynamic Array Implementation
+ * 
+ * This class provides a custom implementation of a dynamic array (similar to ArrayList)
+ * for the Smart Campus Management System. It's designed to demonstrate data structure
+ * concepts while providing the functionality needed by the application.
+ * 
+ * Key Features:
+ * - Dynamic resizing when capacity is exceeded
+ * - Generic type support for type safety
+ * - Iterator support for enhanced for-loops
+ * - Index-based access and manipulation
+ * - Automatic capacity management
+ * 
+ * The class provides methods for:
+ * - Adding elements (append and insert at index)
+ * - Removing elements (by index or by value)
+ * - Accessing elements by index
+ * - Searching for elements
+ * - Size and capacity management
+ * - Iteration support
+ * 
+ * This implementation is used throughout the system for storing collections
+ * of students, courses, tickets, and other entities.
+ */
 public class CustomArrayList<T> implements Iterable<T> {
-    private Object[] elements;
-    private int size;
-    private static final int DEFAULT_CAPACITY = 10;
+
+    // ========== INTERNAL STORAGE ==========
+    private Object[] elements;              // Internal array to store elements
+    private int size;                      // Current number of elements in the list
+    private static final int DEFAULT_CAPACITY = 10;  // Initial capacity when no size specified
 
     public CustomArrayList() {
         elements = new Object[DEFAULT_CAPACITY];
