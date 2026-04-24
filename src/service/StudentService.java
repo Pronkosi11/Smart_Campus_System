@@ -266,7 +266,15 @@ public class StudentService {
      * @param student The Student object whose profile to display
      */
     public void showStudentProfile(BoxUI box, Student student) {
-        box.printSection("MY PROFILE");
+        box.printSection("MY PROFILE", 
+            "Student No.: " + student.getStudentNumber(),
+            "Name       : " + student.getName(),
+            "Gender     : " + student.getGender(),
+            "Department : " + student.getDepartment(),
+            "Year       : " + student.getYear(),
+            "Email      : " + student.getEmail(),
+            "Phone      : " + student.getPhone(),
+            "Courses    : " + student.getEnrolledCourses().size());
         printStudentDetails(box, student);
         box.endSection();
     }
@@ -316,7 +324,15 @@ public class StudentService {
             box.error("Student not found.");
             return;
         }
-        box.printSection("STUDENT DETAILS");
+        box.printSection("STUDENT DETAILS", 
+            "Student No.: " + s.getStudentNumber(),
+            "Name       : " + s.getName(),
+            "Gender     : " + s.getGender(),
+            "Department : " + s.getDepartment(),
+            "Year       : " + s.getYear(),
+            "Email      : " + s.getEmail(),
+            "Phone      : " + s.getPhone(),
+            "Courses    : " + s.getEnrolledCourses().size());
         printStudentDetails(box, s);
         box.endSection();
     }
