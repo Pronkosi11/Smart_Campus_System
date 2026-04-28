@@ -38,10 +38,10 @@ public class ConsoleUI {
     // Service layer instances - using singleton pattern for centralized state management
     private final StudentService studentService = StudentService.getInstance();      // Handles student CRUD operations and profile management
     private final CourseService courseService = CourseService.getInstance();        // Manages course catalog and enrollment
-    private final LibraryService libraryService = LibraryService.getInstance();     // Library services (placeholder for future implementation)
-    private final HostelService hostelService = HostelService.getInstance();        // Hostel management (placeholder for future implementation)
-    private final HelpDeskService helpDeskService = HelpDeskService.getInstance();  // Support ticket system (fully implemented)
-    private final EventService eventService = EventService.getInstance();          // Event management (placeholder for future implementation)
+    private final LibraryService libraryService = LibraryService.getInstance();     // Library catalogue, borrowing and waiting lists
+    private final HostelService hostelService = HostelService.getInstance();        // Hostel applications and allocations
+    private final HelpDeskService helpDeskService = HelpDeskService.getInstance();  // Support ticket system
+    private final EventService eventService = EventService.getInstance();           // Campus events and registrations
 
     /**
      * Main application loop that displays the welcome menu and handles user choices.
@@ -202,16 +202,16 @@ public class ConsoleUI {
                     courseService.showAdminCoursesMenu(box);
                     break;
                 case 3:
-                    box.info(libraryService.getAdminStatusMessage());
+                    libraryService.showAdminLibraryMenu(box);
                     break;
                 case 4:
-                    box.info(hostelService.getAdminStatusMessage());
+                    hostelService.showAdminHostelMenu(box);
                     break;
                 case 5:
                     helpDeskService.showAdminHelpDeskMenu(box);
                     break;
                 case 6:
-                    box.info(eventService.getAdminStatusMessage());
+                    eventService.showAdminEventsMenu(box);
                     break;
                 case 7:
                     box.info("Logging out...");
@@ -250,16 +250,16 @@ public class ConsoleUI {
                     courseService.showStudentCourseRegistration(box, student);
                     break;
                 case 3:
-                    box.info(libraryService.getStudentStatusMessage());
+                    libraryService.showStudentLibraryMenu(box, student);
                     break;
                 case 4:
-                    box.info(hostelService.getStudentStatusMessage());
+                    hostelService.showStudentHostelMenu(box, student);
                     break;
                 case 5:
                     helpDeskService.showStudentHelpDeskMenu(box, student);
                     break;
                 case 6:
-                    box.info(eventService.getStudentStatusMessage());
+                    eventService.showStudentEventsMenu(box, student);
                     break;
                 case 7:
                     box.info("Logging out...");
