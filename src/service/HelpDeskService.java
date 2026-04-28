@@ -300,10 +300,14 @@ public class HelpDeskService {
             box.info("You have no tickets.");
             return;
         }
-        box.printSection("MY HELP DESK TICKETS");
+        String[] lines = new String[tickets.size()];
         for (int i = 0; i < tickets.size(); i++) {
             Ticket t = tickets.get(i);
-            box.line((i + 1) + ". " + t.getId() + " | " + t.getSubject() + " | " + t.getStatus());
+            lines[i] = (i + 1) + ". " + t.getId() + " | " + t.getSubject() + " | " + t.getStatus();
+        }
+        box.printSection("MY HELP DESK TICKETS", lines);
+        for (String line : lines) {
+            box.line(line);
         }
         box.endSection();
     }
@@ -320,9 +324,13 @@ public class HelpDeskService {
             return;
         }
         CustomArrayList<String> history = snapshotStack(t.getStatusHistory());
-        box.printSection("TICKET HISTORY - " + t.getId());
+        String[] lines = new String[history.size()];
         for (int i = 0; i < history.size(); i++) {
-            box.line((i + 1) + ". " + history.get(i));
+            lines[i] = (i + 1) + ". " + history.get(i);
+        }
+        box.printSection("TICKET HISTORY - " + t.getId(), lines);
+        for (String line : lines) {
+            box.line(line);
         }
         box.endSection();
     }
@@ -336,10 +344,14 @@ public class HelpDeskService {
             box.info("No pending tickets.");
             return;
         }
-        box.printSection("PENDING TICKETS");
+        String[] lines = new String[pending.size()];
         for (int i = 0; i < pending.size(); i++) {
             Ticket t = pending.get(i);
-            box.line((i + 1) + ". " + t.getId() + " | " + t.getSubject() + " | " + t.getStudentNumber());
+            lines[i] = (i + 1) + ". " + t.getId() + " | " + t.getSubject() + " | " + t.getStudentNumber();
+        }
+        box.printSection("PENDING TICKETS", lines);
+        for (String line : lines) {
+            box.line(line);
         }
         box.endSection();
     }
@@ -353,7 +365,12 @@ public class HelpDeskService {
             box.info("No pending tickets to process.");
             return;
         }
-        box.printSection("PROCESS NEXT TICKET");
+        box.printSection("PROCESS NEXT TICKET", 
+                "Ticket: " + next.getId(), 
+                "Student: " + next.getStudentNumber(),
+                "Subject: " + next.getSubject(),
+                "Current Status: " + next.getStatus(),
+                "Description: " + next.getDescription());
         box.line("Ticket: " + next.getId());
         box.line("Student: " + next.getStudentNumber());
         box.line("Subject: " + next.getSubject());
@@ -404,7 +421,7 @@ public class HelpDeskService {
             return;
         }
 
-        box.printSection("TICKETS - " + selectedStatus.toUpperCase());
+        box.printSection("TICKETS - " + selectedStatus.toUpperCase(), tickets.size() > 0 ? new String[]{"Longer subject title placeholder for sizing"} : new String[0]);
         for (int i = 0; i < tickets.size(); i++) {
             Ticket ticket = tickets.get(i);
             String row = (i + 1) + ". " + ticket.getId()

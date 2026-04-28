@@ -98,6 +98,9 @@ public class BoxUI {
 
     private String formatBoxRow(String content, int width) {
         String text = content == null ? "" : content;
+        if (text.length() > width) {
+            text = text.substring(0, width - 3) + "...";
+        }
         return "║" + String.format("%-" + width + "s", text) + "║";
     }
 

@@ -6,7 +6,10 @@ import datastructures.CustomQueue;
 import datastructures.CustomStack;
 import model.*;
 import service.CourseService;
+import service.EventService;
 import service.HelpDeskService;
+import service.HostelService;
+import service.LibraryService;
 
 import service.LoginService;
 import service.StudentService;
@@ -49,11 +52,17 @@ public final class DataPersistence {
         loadStudents();
         loadCourses();
         loadTickets();
+        loadBooks();
+        loadHostels();
+        loadEvents();
     }
 
     public static void saveAllData() {
         saveStudents(StudentService.getInstance().getStudentsMap());
         saveCourses(CourseService.getInstance().getCoursesMap());
+        saveBooks(LibraryService.getInstance().getBooksMap());
+        saveHostels(HostelService.getInstance().getHostelsMap());
+        saveEvents(EventService.getInstance().getEventsList());
         HelpDeskService helpDeskService = HelpDeskService.getInstance();
         saveTickets(
                 helpDeskService.getPendingTicketsSnapshotAsQueue(),
@@ -240,7 +249,81 @@ public final class DataPersistence {
 
     // --- Books ---
 
+    public static void saveBooks(CustomHashMap<String, LibraryBook> books) {
+        try {
+            List<Object> arr = new ArrayList<>();
+            CustomArrayList<LibraryBook> vals = books.values();
+            for (int i = 0; i < vals.size(); i++) {
+                arr.add(bookToMap(vals.get(i)));
+            }
+            Map<String, Object> root = new LinkedHashMap<>();
+            root.put("books", arr);
+            JsonFileHandler.writeFile(BOOKS_FILE, JsonFileHandler.stringifyObject(root));
+        } catch (IOException e) {
+            System.err.println("Failed to save books: " + e.getMessage());
+        }
+    }
 
+    private static Map<String, Object> bookToMap(LibraryBook b) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", b.getId());
+        m.put("title", b.getTitle());
+        m.put("author", b.getAuthor());
+        m.put("isbn", b.getIsbn());
+        m.put("isAvailable", b.isAvailable());
+        m.put("borrowedByStudentId", b.getBorrowedByStudentId());
+        m.put("waitingListStudentIds", stringListToJson(snapshotQueueIds(b.getWaitingListStudentIds())));
+        return m;
+    }
+
+    private static void loadBooks() {
+        try {
+            String raw = JsonFileHandler.readFile(BOOKS_FILE);
+            if (raw == null) {
+                return;
+            }
+            Map<String, Object> root = JsonFileHandler.parseObject(raw);
+            List<Map<String, Object>> rows = getObjectList(root, "books");
+            CustomHashMap<String, LibraryBook> map = new CustomHashMap<>();
+            for (Map<String, Object> row : rows) {
+                LibraryBook b = bookFromMap(row);
+                if (b != null) {
+                    map.put(b.getId(), b);
+                }
+            }
+            LibraryService.getInstance().setBooks(map);
+        } catch (Exception e) {
+            System.err.println("Failed to load books: " + e.getMessage());
+        }
+    }
+
+    private static LibraryBook bookFromMap(Map<String, Object> row) {
+        String id = getStr(row, "id", null);
+        if (id == null) {
+            id = getStr(row, "bookId", null);
+        }
+        if (id == null) {
+            return null;
+        }
+        CustomQueue<String> waitingList = new CustomQueue<>();
+        CustomArrayList<String> waitingIds = readStringListObj(row.get("waitingListStudentIds"));
+        if (waitingIds.isEmpty()) {
+            waitingIds = readStringListObj(row.get("waitingList"));
+        }
+        for (int i = 0; i < waitingIds.size(); i++) {
+            waitingList.enqueue(waitingIds.get(i));
+        }
+
+        return new LibraryBook(
+                id,
+                getStr(row, "title", ""),
+                getStr(row, "author", ""),
+                getStr(row, "isbn", ""),
+                (Boolean) row.getOrDefault("isAvailable", true),
+                getStr(row, "borrowedByStudentId", null),
+                waitingList
+        );
+    }
     private static CustomArrayList<String> snapshotQueueIds(CustomQueue<String> q) {
         CustomArrayList<String> copy = new CustomArrayList<>();
         CustomQueue<String> temp = new CustomQueue<>();
@@ -258,6 +341,66 @@ public final class DataPersistence {
 
 
     // --- Hostels + applications ---
+
+    public static void saveHostels(CustomHashMap<String, HostelRoom> hostels) {
+        try {
+            List<Object> arr = new ArrayList<>();
+            CustomArrayList<HostelRoom> vals = hostels.values();
+            for (int i = 0; i < vals.size(); i++) {
+                arr.add(hostelToMap(vals.get(i)));
+            }
+            Map<String, Object> root = new LinkedHashMap<>();
+            root.put("hostels", arr);
+            JsonFileHandler.writeFile(HOSTELS_FILE, JsonFileHandler.stringifyObject(root));
+        } catch (IOException e) {
+            System.err.println("Failed to save hostels: " + e.getMessage());
+        }
+    }
+
+    private static Map<String, Object> hostelToMap(HostelRoom r) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", r.getId());
+        m.put("roomNumber", r.getRoomNumber());
+        m.put("capacity", r.getCapacity());
+        m.put("occupantStudentIds", stringListToJson(r.getOccupantStudentIds()));
+        m.put("isAvailable", r.isAvailable());
+        return m;
+    }
+
+    private static void loadHostels() {
+        try {
+            String raw = JsonFileHandler.readFile(HOSTELS_FILE);
+            if (raw == null) {
+                return;
+            }
+            Map<String, Object> root = JsonFileHandler.parseObject(raw);
+            List<Map<String, Object>> rows = getObjectList(root, "hostels");
+            CustomHashMap<String, HostelRoom> map = new CustomHashMap<>();
+            for (Map<String, Object> row : rows) {
+                HostelRoom r = hostelFromMap(row);
+                if (r != null) {
+                    map.put(r.getId(), r);
+                }
+            }
+            HostelService.getInstance().setHostels(map);
+        } catch (Exception e) {
+            System.err.println("Failed to load hostels: " + e.getMessage());
+        }
+    }
+
+    private static HostelRoom hostelFromMap(Map<String, Object> row) {
+        String id = getStr(row, "id", null);
+        if (id == null) {
+            return null;
+        }
+        return new HostelRoom(
+                id,
+                getStr(row, "roomNumber", ""),
+                getInt(row, "capacity", 0),
+                readStringListObj(row.get("occupantStudentIds")),
+                (Boolean) row.getOrDefault("isAvailable", true)
+        );
+    }
 
 
     // --- Tickets ---
@@ -377,6 +520,67 @@ public final class DataPersistence {
 
 
     // --- Events ---
+
+    public static void saveEvents(CustomArrayList<Event> events) {
+        try {
+            List<Object> arr = new ArrayList<>();
+            for (int i = 0; i < events.size(); i++) {
+                arr.add(eventToMap(events.get(i)));
+            }
+            Map<String, Object> root = new LinkedHashMap<>();
+            root.put("events", arr);
+            JsonFileHandler.writeFile(EVENTS_FILE, JsonFileHandler.stringifyObject(root));
+        } catch (IOException e) {
+            System.err.println("Failed to save events: " + e.getMessage());
+        }
+    }
+
+    private static Map<String, Object> eventToMap(Event e) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", e.getId());
+        m.put("name", e.getName());
+        m.put("description", e.getDescription());
+        m.put("date", e.getDate().toString());
+        m.put("location", e.getLocation());
+        m.put("attendeeStudentIds", stringListToJson(e.getAttendeeStudentIds()));
+        return m;
+    }
+
+    private static void loadEvents() {
+        try {
+            String raw = JsonFileHandler.readFile(EVENTS_FILE);
+            if (raw == null) {
+                return;
+            }
+            Map<String, Object> root = JsonFileHandler.parseObject(raw);
+            List<Map<String, Object>> rows = getObjectList(root, "events");
+            CustomArrayList<Event> list = new CustomArrayList<>();
+            for (Map<String, Object> row : rows) {
+                Event e = eventFromMap(row);
+                if (e != null) {
+                    list.add(e);
+                }
+            }
+            EventService.getInstance().setEvents(list);
+        } catch (Exception e) {
+            System.err.println("Failed to load events: " + e.getMessage());
+        }
+    }
+
+    private static Event eventFromMap(Map<String, Object> row) {
+        String id = getStr(row, "id", null);
+        if (id == null) {
+            return null;
+        }
+        return new Event(
+                id,
+                getStr(row, "name", ""),
+                getStr(row, "description", ""),
+                LocalDate.parse(getStr(row, "date", LocalDate.now().toString())),
+                getStr(row, "location", ""),
+                readStringListObj(row.get("attendeeStudentIds"))
+        );
+    }
 
 
 

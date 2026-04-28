@@ -202,16 +202,16 @@ public class ConsoleUI {
                     courseService.showAdminCoursesMenu(box);
                     break;
                 case 3:
-                    box.info(libraryService.getAdminStatusMessage());
+                    libraryService.showAdminLibraryMenu(box);
                     break;
                 case 4:
-                    box.info(hostelService.getAdminStatusMessage());
+                    hostelService.showAdminHostelMenu(box);
                     break;
                 case 5:
                     helpDeskService.showAdminHelpDeskMenu(box);
                     break;
                 case 6:
-                    box.info(eventService.getAdminStatusMessage());
+                    eventService.showAdminEventMenu(box);
                     break;
                 case 7:
                     box.info("Logging out...");
@@ -250,16 +250,16 @@ public class ConsoleUI {
                     courseService.showStudentCourseRegistration(box, student);
                     break;
                 case 3:
-                    box.info(libraryService.getStudentStatusMessage());
+                    libraryService.showStudentLibraryMenu(box, student);
                     break;
                 case 4:
-                    box.info(hostelService.getStudentStatusMessage());
+                    hostelService.showStudentHostelMenu(box, student);
                     break;
                 case 5:
                     helpDeskService.showStudentHelpDeskMenu(box, student);
                     break;
                 case 6:
-                    box.info(eventService.getStudentStatusMessage());
+                    eventService.showStudentEventMenu(box, student);
                     break;
                 case 7:
                     box.info("Logging out...");
