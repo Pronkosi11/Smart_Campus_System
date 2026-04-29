@@ -33,7 +33,7 @@ public class ConsoleUI {
 
     // Core UI components for user interaction
     private final Scanner scanner = new Scanner(System.in);
-    private final BoxUI box = new BoxUI(scanner);
+    private final ui.BoxUI box = new BoxUI(scanner);
 
     // Service layer instances - using singleton pattern for centralized state management
     private final StudentService studentService = StudentService.getInstance();      // Handles student CRUD operations and profile management

@@ -50,11 +50,15 @@ public final class JsonFileHandler {
 
     public static String stringifyObject(Map<String, Object> map) {
         StringBuilder sb = new StringBuilder();
-        writeObject(sb, map);
+        writeObject(sb, map, 0);
         return sb.toString();
     }
 
     static void writeValue(StringBuilder sb, Object v) {
+        writeValue(sb, v, 0);
+    }
+
+    static void writeValue(StringBuilder sb, Object v, int indent) {
         if (v == null) {
             sb.append("null");
         } else if (v instanceof String) {
@@ -64,36 +68,50 @@ public final class JsonFileHandler {
         } else if (v instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> m = (Map<String, Object>) v;
-            writeObject(sb, m);
+            writeObject(sb, m, indent);
         } else if (v instanceof List) {
-            writeArray(sb, (List<?>) v);
+            writeArray(sb, (List<?>) v, indent);
         } else {
             writeString(sb, v.toString());
         }
     }
 
-    private static void writeObject(StringBuilder sb, Map<String, Object> map) {
+    private static void writeObject(StringBuilder sb, Map<String, Object> map, int indent) {
         sb.append('{');
+        sb.append('\n');
         boolean first = true;
         for (Map.Entry<String, Object> e : map.entrySet()) {
             if (!first) {
                 sb.append(',');
+                sb.append('\n');
             }
             first = false;
+            indent(sb, indent + 2);
             writeString(sb, e.getKey());
-            sb.append(':');
-            writeValue(sb, e.getValue());
+            sb.append(": ");
+            writeValue(sb, e.getValue(), indent + 2);
+        }
+        if (!map.isEmpty()) {
+            sb.append('\n');
+            indent(sb, indent);
         }
         sb.append('}');
     }
 
-    private static void writeArray(StringBuilder sb, List<?> list) {
+    private static void writeArray(StringBuilder sb, List<?> list, int indent) {
         sb.append('[');
-        for (int i = 0; i < list.size(); i++) {
-            if (i > 0) {
-                sb.append(',');
+        if (!list.isEmpty()) {
+            sb.append('\n');
+            for (int i = 0; i < list.size(); i++) {
+                if (i > 0) {
+                    sb.append(',');
+                    sb.append('\n');
+                }
+                indent(sb, indent + 2);
+                writeValue(sb, list.get(i), indent + 2);
             }
-            writeValue(sb, list.get(i));
+            sb.append('\n');
+            indent(sb, indent);
         }
         sb.append(']');
     }
@@ -133,6 +151,12 @@ public final class JsonFileHandler {
             }
         }
         sb.append('"');
+    }
+
+    private static void indent(StringBuilder sb, int spaces) {
+        for (int i = 0; i < spaces; i++) {
+            sb.append(' ');
+        }
     }
 
     private static final class JsonReader {

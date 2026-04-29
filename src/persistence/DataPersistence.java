@@ -4,16 +4,6 @@ import datastructures.CustomArrayList;
 import datastructures.CustomHashMap;
 import datastructures.CustomQueue;
 import datastructures.CustomStack;
-import model.*;
-import service.CourseService;
-import service.EventService;
-import service.HelpDeskService;
-import service.HostelService;
-import service.LibraryService;
-
-import service.LoginService;
-import service.StudentService;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,36 +11,122 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import model.*;
+import service.CourseService;
+import service.EventService;
+import service.HelpDeskService;
+import service.HostelService;
+import service.LibraryService;
+import service.LoginService;
+import service.StudentService;
 
 /**
- * Loads and saves all domain data as JSON under {@code data/}.
+ * DataPersistence - JSON Data Storage and Retrieval System
+ * 
+ * This class handles all data persistence operations for the Smart Campus Management System.
+ * It provides a comprehensive solution for saving and loading application data using JSON format.
+ * 
+ * Key Features:
+ * - JSON-based data storage for human-readable files
+ * - Schema validation for data integrity
+ * - Automatic data loading on application startup
+ * - Data saving on application shutdown
+ * - Support for all domain entities (students, courses, books, hostels, tickets, events)
+ * - Integration with custom data structures
+ * 
+ * Key Concepts Demonstrated:
+ * - File I/O operations
+ * - JSON serialization/deserialization
+ * - Schema validation
+ * - Data transformation between objects and JSON
+ * - Static utility class pattern
+ * - Environment variable configuration
+ * - Error handling and validation
+ * 
+ * This class serves as the bridge between the application's in-memory data structures
+ * and persistent file storage, ensuring data survives application restarts.
  */
 public final class DataPersistence {
 
+    // ========== DATA FILE PATHS ==========
+    
+    /** Path to the students JSON data file */
     public static final String STUDENTS_FILE = "data/students.json";
+    
+    /** Path to the courses JSON data file */
     public static final String COURSES_FILE = "data/courses.json";
+    
+    /** Path to the library books JSON data file */
     public static final String BOOKS_FILE = "data/books.json";
+    
+    /** Path to the hostel rooms JSON data file */
     public static final String HOSTELS_FILE = "data/hostels.json";
+    
+    /** Path to the help desk tickets JSON data file */
     public static final String TICKETS_FILE = "data/tickets.json";
+    
+    /** Path to the events JSON data file */
     public static final String EVENTS_FILE = "data/events.json";
 
+    // ========== SCHEMA VALIDATION FILE PATHS ==========
+    
+    /** Path to the students JSON schema file */
     public static final String STUDENTS_SCHEMA_FILE = "schemas/students.schema.json";
+    
+    /** Path to the courses JSON schema file */
     public static final String COURSES_SCHEMA_FILE = "schemas/courses.schema.json";
+    
+    /** Path to the books JSON schema file */
     public static final String BOOKS_SCHEMA_FILE = "schemas/books.schema.json";
+    
+    /** Path to the hostels JSON schema file */
     public static final String HOSTELS_SCHEMA_FILE = "schemas/hostels.schema.json";
+    
+    /** Path to the tickets JSON schema file */
     public static final String TICKETS_SCHEMA_FILE = "schemas/tickets.schema.json";
+    
+    /** Path to the events JSON schema file */
     public static final String EVENTS_SCHEMA_FILE = "schemas/events.schema.json";
+    
+    /** 
+     * Controls strict schema validation mode.
+     * When true, invalid data causes exceptions.
+     * When false, invalid data generates warnings but allows loading.
+     * Controlled by environment variable "STRICT_SCHEMA".
+     */
     private static final boolean STRICT_SCHEMA_VALIDATION =
             "true".equalsIgnoreCase(System.getenv("STRICT_SCHEMA"));
 
+    /**
+     * Private constructor to prevent instantiation.
+     * 
+     * This class is designed as a utility class with only static methods.
+     * Making the constructor private ensures it cannot be instantiated.
+     */
     private DataPersistence() {
     }
 
+    // ========== MAIN DATA OPERATIONS ==========
+    
+    /**
+     * Loads all application data from JSON files.
+     * 
+     * This is the primary method called during application startup:
+     * 1. Validates that all required data files exist
+     * 2. Loads each type of data in the correct order
+     * 3. Populates the service layer with loaded data
+     * 4. Handles any loading errors appropriately
+     * 
+     * The loading order is important to maintain data integrity and
+     * resolve dependencies between different entity types.
+     */
     public static void loadAllData() {
+        // First, validate that all required files exist
         validateConfiguredDataFiles();
-        loadStudents();
-        loadCourses();
+        
+        // Load data in dependency order
+        loadStudents();    // Load students first (no dependencies)
+        loadCourses();     // Load courses (no dependencies)
         loadTickets();
         loadBooks();
         loadHostels();
@@ -266,13 +342,13 @@ public final class DataPersistence {
 
     private static Map<String, Object> bookToMap(LibraryBook b) {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("id", b.getId());
+        m.put("bookId", b.getId());
         m.put("title", b.getTitle());
         m.put("author", b.getAuthor());
         m.put("isbn", b.getIsbn());
-        m.put("isAvailable", b.isAvailable());
-        m.put("borrowedByStudentId", b.getBorrowedByStudentId());
-        m.put("waitingListStudentIds", stringListToJson(snapshotQueueIds(b.getWaitingListStudentIds())));
+        m.put("totalCopies", 3); // Default total copies - you may want to make this configurable
+        m.put("availableCopies", b.isAvailable() ? 1 : 0); // Simplified for current model
+        m.put("waitingList", stringListToJson(snapshotQueueIds(b.getWaitingListStudentIds())));
         return m;
     }
 
@@ -298,20 +374,30 @@ public final class DataPersistence {
     }
 
     private static LibraryBook bookFromMap(Map<String, Object> row) {
-        String id = getStr(row, "id", null);
+        String id = getStr(row, "bookId", null);
         if (id == null) {
-            id = getStr(row, "bookId", null);
+            id = getStr(row, "id", null); // Backward compatibility
         }
         if (id == null) {
             return null;
         }
+        
         CustomQueue<String> waitingList = new CustomQueue<>();
-        CustomArrayList<String> waitingIds = readStringListObj(row.get("waitingListStudentIds"));
+        CustomArrayList<String> waitingIds = readStringListObj(row.get("waitingList"));
         if (waitingIds.isEmpty()) {
-            waitingIds = readStringListObj(row.get("waitingList"));
+            waitingIds = readStringListObj(row.get("waitingListStudentIds")); // Backward compatibility
         }
         for (int i = 0; i < waitingIds.size(); i++) {
             waitingList.enqueue(waitingIds.get(i));
+        }
+
+        // Determine availability from new format or fall back to old format
+        boolean isAvailable = true;
+        if (row.containsKey("availableCopies")) {
+            int availableCopies = getInt(row, "availableCopies", 0);
+            isAvailable = availableCopies > 0;
+        } else {
+            isAvailable = (Boolean) row.getOrDefault("isAvailable", true);
         }
 
         return new LibraryBook(
@@ -319,7 +405,7 @@ public final class DataPersistence {
                 getStr(row, "title", ""),
                 getStr(row, "author", ""),
                 getStr(row, "isbn", ""),
-                (Boolean) row.getOrDefault("isAvailable", true),
+                isAvailable,
                 getStr(row, "borrowedByStudentId", null),
                 waitingList
         );

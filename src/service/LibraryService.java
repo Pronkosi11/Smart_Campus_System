@@ -9,22 +9,71 @@ import persistence.DataPersistence;
 import ui.BoxUI;
 
 /**
- * Service class for library operations.
- * Handles book management for admins and borrowing/returning for students.
+ * LibraryService - Library Management Service
+ * 
+ * This service class handles all library-related operations in the Smart Campus System.
+ * It provides comprehensive library management functionality including:
+ * 
+ * Core Operations:
+ * - Book creation, retrieval, update, and deletion (CRUD operations)
+ * - Book borrowing and returning for students
+ * - Waiting list management for popular books
+ * - Book availability tracking
+ * 
+ * UI Integration:
+ * - Admin interface for book management
+ * - Student library interface for borrowing/returning
+ * - Clean BoxUI-based console interface
+ * 
+ * Data Management:
+ * - Uses CustomHashMap for efficient book storage (O(1) lookup by book ID)
+ * - CustomQueue for managing waiting lists (FIFO order)
+ * - Automatic persistence through DataPersistence layer
+ * - Integration with StudentService for tracking borrowed books
+ * 
+ * Key Concepts Demonstrated:
+ * - Singleton design pattern (single instance across application)
+ * - Service layer architecture (separates business logic from UI)
+ * - Queue data structure for waiting lists
+ * - Book availability management
+ * - Student borrowing history tracking
+ * 
+ * This class follows the Singleton pattern to ensure centralized library data management
+ * across the entire application, preventing data inconsistencies.
  */
 public class LibraryService {
+    
+    /** 
+     * Singleton instance to ensure centralized library management.
+     * This ensures all parts of the application work with the same library data.
+     */
     private static LibraryService instance;
-    /** In-memory storage for library books, keyed by book ID */
+    
+    /** 
+     * In-memory storage for library books, keyed by book ID for fast lookup.
+     * Using CustomHashMap provides O(1) average time complexity for book retrieval.
+     */
     private CustomHashMap<String, LibraryBook> books = new CustomHashMap<>();
 
     /**
-     * Private constructor for Singleton pattern.
+     * Private constructor to enforce singleton pattern.
+     * 
+     * This constructor is private to prevent direct instantiation.
+     * Use getInstance() to get the singleton instance.
      */
     private LibraryService() {
     }
 
     /**
-     * Returns the singleton instance of LibraryService.
+     * Gets the singleton instance of LibraryService.
+     * 
+     * This method implements the lazy initialization singleton pattern:
+     * - If no instance exists, create one
+     * - Return the existing instance
+     * 
+     * This ensures only one LibraryService exists throughout the application.
+     * 
+     * @return The singleton LibraryService instance
      */
     public static LibraryService getInstance() {
         if (instance == null) {
@@ -33,9 +82,15 @@ public class LibraryService {
         return instance;
     }
 
+    // ========== DATA MANAGEMENT METHODS ==========
+    
     /**
-     * Sets the book data loaded from persistence.
-     * @param loadedBooks HashMap of books
+     * Sets the book data loaded from persistence storage.
+     * 
+     * This method is used by the persistence layer to restore book data
+     * when the application starts up. It replaces the entire book collection.
+     * 
+     * @param loadedBooks HashMap of books loaded from storage
      */
     public void setBooks(CustomHashMap<String, LibraryBook> loadedBooks) {
         this.books = loadedBooks;
@@ -43,18 +98,37 @@ public class LibraryService {
 
     /**
      * Returns the internal map of books for persistence saving.
+     * 
+     * This method provides access to the underlying data structure for
+     * persistence operations and other system components.
+     * 
+     * @return The internal HashMap containing all books
      */
     public CustomHashMap<String, LibraryBook> getBooksMap() {
         return books;
     }
 
+    // ========== USER INTERFACE METHODS ==========
+    
     /**
      * Displays the administrative library menu.
-     * @param box UI utility for rendering
+     * 
+     * This method provides the main interface for administrators to manage the library:
+     * - Add new books to the collection
+     * - Remove books from the collection
+     * - List all books in the library
+     * - View waiting lists for popular books
+     * - Return to admin dashboard
+     * 
+     * The menu uses a do-while loop to persist until the user chooses to exit,
+     * providing a continuous workflow for library management tasks.
+     * 
+     * @param box The BoxUI instance for rendering the interface
      */
     public void showAdminLibraryMenu(BoxUI box) {
         int choice;
         do {
+            // Display the library management menu options
             box.printMenu("LIBRARY MANAGEMENT (ADMIN)", new String[]{
                     "1. Add New Book",
                     "2. Remove Book",
@@ -62,24 +136,50 @@ public class LibraryService {
                     "4. View Waiting List",
                     "5. Back to Main Menu"
             });
+            
+            // Get user's menu choice with validation
             choice = box.readInt("Choose option: ", 1, 5);
+            
+            // Execute the selected action
             switch (choice) {
-                case 1: addBookFlow(box); break;
-                case 2: removeBookFlow(box); break;
-                case 3: listAllBooks(box); break;
-                case 4: viewWaitingListFlow(box); break;
+                case 1: 
+                    addBookFlow(box);        // Add a new book to library
+                    break;
+                case 2: 
+                    removeBookFlow(box);     // Remove an existing book
+                    break;
+                case 3: 
+                    listAllBooks(box);       // Display all books
+                    break;
+                case 4: 
+                    viewWaitingListFlow(box); // View waiting lists
+                    break;
+                // Case 5 (Back) handled by loop condition
             }
-        } while (choice != 5);
+        } while (choice != 5);  // Continue until user chooses "Back"
     }
 
     /**
      * Displays the student library portal.
-     * @param box UI utility
-     * @param student Currently logged-in student
+     * 
+     * This method provides a comprehensive library interface for students:
+     * - Browse all available books
+     * - Search for specific books by ID
+     * - Borrow available books
+     * - Return borrowed books
+     * - View currently borrowed books
+     * - Return to student portal
+     * 
+     * The interface uses a do-while loop to allow multiple library actions
+     * before returning to the student dashboard.
+     * 
+     * @param box The BoxUI instance for rendering the interface
+     * @param student The currently logged-in student
      */
     public void showStudentLibraryMenu(BoxUI box, Student student) {
         int choice;
         do {
+            // Display the student library menu options
             box.printMenu("LIBRARY SERVICES", new String[]{
                     "1. Browse All Books",
                     "2. Search Book by ID",
@@ -88,15 +188,30 @@ public class LibraryService {
                     "5. View My Borrowed Books",
                     "6. Back to Portal"
             });
+            
+            // Get user's menu choice with validation
             choice = box.readInt("Choose option: ", 1, 6);
+            
+            // Execute the selected action
             switch (choice) {
-                case 1: listAllBooks(box); break;
-                case 2: searchBookFlow(box); break;
-                case 3: borrowBookFlow(box, student); break;
-                case 4: returnBookFlow(box, student); break;
-                case 5: listStudentBooks(box, student); break;
+                case 1: 
+                    listAllBooks(box);           // Browse all books
+                    break;
+                case 2: 
+                    searchBookFlow(box);         // Search for specific book
+                    break;
+                case 3: 
+                    borrowBookFlow(box, student); // Borrow a book
+                    break;
+                case 4: 
+                    returnBookFlow(box, student); // Return a book
+                    break;
+                case 5: 
+                    listStudentBooks(box, student); // View borrowed books
+                    break;
+                // Case 6 (Back) handled by loop condition
             }
-        } while (choice != 6);
+        } while (choice != 6);  // Continue until user chooses "Back"
     }
 
     // --- Admin Operations ---

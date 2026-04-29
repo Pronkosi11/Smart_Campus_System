@@ -54,28 +54,36 @@ public class HelpDeskService {
         do {
             box.info("Admin Help Desk: review student issues, update their status, and close resolved tickets.");
             box.printMenu("HELP DESK - ADMIN", new String[]{
-                    "1. View Pending Tickets (FIFO processing order)",
-                    "2. Process Next Ticket (update workflow status)",
-                    "3. View Tickets by Status (open/in-progress/closed)",
-                    "4. Back to Admin Dashboard"
+                    "1. View All Tickets",
+                    "2. View Pending Tickets",
+                    "3. Process Next Ticket",
+                    "4. Update Ticket Status",
+                    "5. Search Ticket by ID",
+                    "6. Back to Admin Dashboard"
             });
-            choice = box.readInt("Choose an admin option: ", 1, 4);
+            choice = box.readInt("Choose an admin option: ", 1, 6);
             switch (choice) {
                 case 1:
-                    displayPendingTickets(box);
+                    displayAllTickets(box);
                     break;
                 case 2:
-                    processNextTicket(box);
+                    displayPendingTickets(box);
                     break;
                 case 3:
-                    displayTicketsByStatus(box);
+                    processNextTicket(box);
                     break;
                 case 4:
+                    updateTicketStatus(box);
+                    break;
+                case 5:
+                    searchTicketById(box);
+                    break;
+                case 6:
                     break;
                 default:
                     box.error("Invalid option.");
             }
-        } while (choice != 4);
+        } while (choice != 6);
     }
 
     /**
@@ -108,7 +116,7 @@ public class HelpDeskService {
                 default:
                     box.error("Invalid option.");
             }
-        } while (choice != 4);
+        } while (choice != 6);
     }
 
     /**
@@ -396,6 +404,106 @@ public class HelpDeskService {
         } else {
             box.error("Could not update ticket.");
         }
+    }
+
+    /**
+     * Displays all tickets (both pending and resolved).
+     */
+    private void displayAllTickets(BoxUI box) {
+        CustomArrayList<Ticket> all = getAllTickets();
+        if (all.isEmpty()) {
+            box.info("No tickets found.");
+            return;
+        }
+        String[] lines = new String[all.size()];
+        for (int i = 0; i < all.size(); i++) {
+            Ticket t = all.get(i);
+            lines[i] = (i + 1) + ". " + t.getId() + " | " + t.getSubject() + " | " + t.getStatus() + " | " + t.getStudentNumber();
+        }
+        box.printSection("ALL TICKETS", lines);
+        for (String line : lines) {
+            box.line(line);
+        }
+        box.endSection();
+    }
+
+    /**
+     * Updates ticket status with user-friendly interface.
+     */
+    private void updateTicketStatus(BoxUI box) {
+        String ticketId = box.prompt("Enter Ticket ID: ");
+        if (isBlank(ticketId)) {
+            box.error("Ticket ID is required.");
+            return;
+        }
+        
+        Ticket t = findTicketById(ticketId);
+        if (t == null) {
+            box.error("Ticket not found.");
+            return;
+        }
+        
+        box.printSection("UPDATE TICKET STATUS", 
+                "Current ID: " + t.getId(),
+                "Current Status: " + t.getStatus(),
+                "Student: " + t.getStudentNumber());
+        box.line("Current ID: " + t.getId());
+        box.line("Current Status: " + t.getStatus());
+        box.line("Student: " + t.getStudentNumber());
+        box.endSection();
+        
+        box.printMenu("NEW STATUS", new String[]{
+                "1. open (ticket received and waiting)",
+                "2. in-progress (currently being handled)",
+                "3. closed (issue fully resolved)",
+                "4. Cancel"
+        });
+        int statusOption = box.readInt("Choose new status: ", 1, 4);
+        if (statusOption == 4) {
+            return;
+        }
+        
+        String[] statuses = {"open", "in-progress", "closed"};
+        if (statusOption >= 1 && statusOption <= 3) {
+            String newStatus = statuses[statusOption - 1];
+            if (updateTicketStatus(ticketId, newStatus)) {
+                box.success("Ticket status updated to: " + newStatus);
+            } else {
+                box.error("Failed to update ticket status.");
+            }
+        }
+    }
+
+    /**
+     * Searches for a specific ticket by ID.
+     */
+    private void searchTicketById(BoxUI box) {
+        String ticketId = box.prompt("Enter Ticket ID: ");
+        if (isBlank(ticketId)) {
+            box.error("Ticket ID is required.");
+            return;
+        }
+        
+        Ticket t = findTicketById(ticketId);
+        if (t == null) {
+            box.error("Ticket not found.");
+            return;
+        }
+        
+        box.printSection("TICKET DETAILS", 
+                "ID: " + t.getId(),
+                "Student: " + t.getStudentNumber(),
+                "Subject: " + t.getSubject(),
+                "Status: " + t.getStatus(),
+                "Created: " + (t.getCreatedAt() != null ? t.getCreatedAt().toString() : "N/A"),
+                "Description: " + t.getDescription());
+        box.line("ID: " + t.getId());
+        box.line("Student: " + t.getStudentNumber());
+        box.line("Subject: " + t.getSubject());
+        box.line("Status: " + t.getStatus());
+        box.line("Created: " + (t.getCreatedAt() != null ? t.getCreatedAt().toString() : "N/A"));
+        box.line("Description: " + t.getDescription());
+        box.endSection();
     }
 
     /**
