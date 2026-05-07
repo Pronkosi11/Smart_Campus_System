@@ -48,11 +48,19 @@ public class CustomArrayList<T> implements Iterable<T> {
         size = 0;
     }
 
+    /**
+     * Adds an element to the end of the list.
+     * If the list is full, it automatically grows to make room.
+     */
     public void add(T element) {
         ensureCapacity(size + 1);
         elements[size++] = element;
     }
 
+    /**
+     * Inserts an element at a specific position in the list.
+     * All elements after this position shift one step to the right.
+     */
     public void add(int index, T element) {
         if (index < 0 || index > size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
@@ -63,6 +71,10 @@ public class CustomArrayList<T> implements Iterable<T> {
         size++;
     }
 
+    /**
+     * Gets the element at the given index.
+     * Think of it like reading a specific page in a book.
+     */
     @SuppressWarnings("unchecked")
     public T get(int index) {
         if (index < 0 || index >= size) {
@@ -71,6 +83,9 @@ public class CustomArrayList<T> implements Iterable<T> {
         return (T) elements[index];
     }
 
+    /**
+     * Replaces the element at a specific position and returns the old value.
+     */
     @SuppressWarnings("unchecked")
     public T set(int index, T element) {
         if (index < 0 || index >= size) {
@@ -81,6 +96,10 @@ public class CustomArrayList<T> implements Iterable<T> {
         return oldElement;
     }
 
+    /**
+     * Removes and returns the element at a specific index.
+     * All elements after it shift one step to the left to fill the gap.
+     */
     @SuppressWarnings("unchecked")
     public T remove(int index) {
         if (index < 0 || index >= size) {
@@ -95,6 +114,10 @@ public class CustomArrayList<T> implements Iterable<T> {
         return removedElement;
     }
 
+    /**
+     * Removes the first matching element from the list.
+     * Returns true if something was removed, false if not found.
+     */
     public boolean remove(T element) {
         for (int i = 0; i < size; i++) {
             if (elements[i].equals(element)) {
@@ -105,10 +128,17 @@ public class CustomArrayList<T> implements Iterable<T> {
         return false;
     }
 
+    /**
+     * Checks if an element exists in the list.
+     */
     public boolean contains(T element) {
         return indexOf(element) >= 0;
     }
 
+    /**
+     * Finds the position (index) of an element.
+     * Returns -1 if the element is not found.
+     */
     public int indexOf(T element) {
         for (int i = 0; i < size; i++) {
             if (elements[i].equals(element)) {
@@ -118,14 +148,17 @@ public class CustomArrayList<T> implements Iterable<T> {
         return -1;
     }
 
+    /** Returns how many items are currently in the list. */
     public int size() {
         return size;
     }
 
+    /** Returns true if the list has no items. */
     public boolean isEmpty() {
         return size == 0;
     }
 
+    /** Removes all items from the list. */
     public void clear() {
         for (int i = 0; i < size; i++) {
             elements[i] = null;
@@ -133,6 +166,10 @@ public class CustomArrayList<T> implements Iterable<T> {
         size = 0;
     }
 
+    /**
+     * Grows the internal array when it runs out of space.
+     * This is like moving to a bigger room when the current one is full.
+     */
     private void ensureCapacity(int minCapacity) {
         if (minCapacity > elements.length) {
             int newCapacity = elements.length * 2;
