@@ -119,7 +119,7 @@ public class BoxUI {
      * Example:
      * ```
      * printSection("Student Profile", "Name: John Doe", "ID: 12345");
-     * line("Department: Computer Science");
+     * line("Faculty: Computer Science");
      * line("Year: 3");
      * endSection();
      * ```

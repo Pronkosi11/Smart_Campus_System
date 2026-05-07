@@ -43,7 +43,7 @@ public class Main {
         consoleUI.start();
 
         // Persist all in-memory data back to JSON files before application exit
-        // This ensures no data is lost between sessions
+        // This ensures no data is lost between sessions3
         DataPersistence.saveAllData();
 
         // Display friendly exit messages to the user

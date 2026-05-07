@@ -170,7 +170,7 @@ public final class DataPersistence {
         m.put("name", s.getName());
         m.put("password", s.getPassword());
         m.put("gender", s.getGender());
-        m.put("department", s.getDepartment());
+        m.put("faculty", s.getFaculty());
         m.put("year", s.getYear());
         m.put("email", s.getEmail());
         m.put("phone", s.getPhone());
@@ -215,37 +215,42 @@ public final class DataPersistence {
         if (studentNumber == null) {
             return null;
         }
-        Student s = new Student(
-                studentNumber,
-                getStr(row, "name", ""),
-                getStr(row, "password", ""),
-                getStr(row, "gender", "Unspecified"),
-                getStr(row, "department", "General"),
-                getInt(row, "year", 1),
-                getStr(row, "email", ""),
-                getStr(row, "phone", "")
-        );
-        CustomArrayList<String> courses = readStringListObj(row.get("enrolledCourses"));
-        for (int i = 0; i < courses.size(); i++) {
-            s.enrollCourse(courses.get(i));
-        }
-        CustomArrayList<String> books = readStringListObj(row.get("borrowedBooks"));
-        for (int i = 0; i < books.size(); i++) {
-            s.borrowBook(books.get(i));
-        }
-        String hostel = getStr(row, "hostelRoom", null);
-        if (hostel != null && !hostel.isEmpty() && !"null".equalsIgnoreCase(hostel)) {
-            s.setHostelRoom(hostel);
-        }
-        String reg = getStr(row, "registrationDate", null);
-        if (reg != null && !reg.isEmpty()) {
-            try {
-                s.setRegistrationDate(LocalDate.parse(reg));
-            } catch (Exception ignored) {
-                // keep default now()
+        try {
+            Student s = new Student(
+                    studentNumber,
+                    getStr(row, "name", ""),
+                    getStr(row, "password", ""),
+                    getStr(row, "gender", "Unspecified"),
+                    getStr(row, "faculty", "General"),
+                    getInt(row, "year", 1),
+                    getStr(row, "email", ""),
+                    getStr(row, "phone", "")
+            );
+            CustomArrayList<String> courses = readStringListObj(row.get("enrolledCourses"));
+            for (int i = 0; i < courses.size(); i++) {
+                s.enrollCourse(courses.get(i));
             }
+            CustomArrayList<String> books = readStringListObj(row.get("borrowedBooks"));
+            for (int i = 0; i < books.size(); i++) {
+                s.borrowBook(books.get(i));
+            }
+            String hostel = getStr(row, "hostelRoom", null);
+            if (hostel != null && !hostel.isEmpty() && !"null".equalsIgnoreCase(hostel)) {
+                s.setHostelRoom(hostel);
+            }
+            String reg = getStr(row, "registrationDate", null);
+            if (reg != null && !reg.isEmpty()) {
+                try {
+                    s.setRegistrationDate(LocalDate.parse(reg));
+                } catch (Exception ignored) {
+                    // keep default now()
+                }
+            }
+            return s;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Skipping invalid student: " + e.getMessage());
+            return null;
         }
-        return s;
     }
 
     private static void clearAllStudentHostelRooms() {

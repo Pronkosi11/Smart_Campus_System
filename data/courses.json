@@ -8,7 +8,9 @@
       "maxCapacity": 100,
       "schedule": "Tue/Thu 07:30/09:20",
       "enrolledStudents": [
-        "2023555555"
+        "2023555555",
+        "12345",
+        "202356843"
       ]
     },
     {

@@ -15,7 +15,7 @@ import ui.BoxUI;
  * Core Operations:
  * - Student registration and profile management
  * - CRUD operations (Create, Read, Update, Delete)
- * - Student lookup and filtering by department
+ * - Student lookup and filtering by faculty
  * - Integration with authentication system
  * 
  * UI Integration:
@@ -130,20 +130,20 @@ public class StudentService {
     }
 
     /**
-     * Filters students by department (case-insensitive).
+     * Filters students by faculty (case-insensitive).
      * 
      * This method searches through all students and returns those
-     * whose department matches the specified department name.
+     * whose faculty matches the specified faculty name.
      * 
-     * @param department The department name to filter by
-     * @return CustomArrayList of students in the specified department
+     * @param faculty The faculty name to filter by
+     * @return CustomArrayList of students in the specified faculty
      */
-    public CustomArrayList<Student> getStudentsByDepartment(String department) {
+    public CustomArrayList<Student> getStudentsByFaculty(String faculty) {
         CustomArrayList<Student> result = new CustomArrayList<>();
         CustomArrayList<Student> allStudents = students.values();
 
         for (Student student : allStudents) {
-            if (student.getDepartment().equalsIgnoreCase(department)) {
+            if (student.getFaculty().equalsIgnoreCase(faculty)) {
                 result.add(student);
             }
         }
@@ -217,7 +217,7 @@ public class StudentService {
      * - Listing all students
      * - Viewing individual student details
      * - Deleting students
-     * - Filtering students by department
+     * - Filtering students by faculty
      * 
      * The menu loop continues until the admin chooses to go back.
      * 
@@ -230,7 +230,7 @@ public class StudentService {
                     "1. List All Students",
                     "2. View Student by Number",
                     "3. Delete Student",
-                    "4. List by Department",
+                    "4. List by Faculty",
                     "5. Back"
             });
 
@@ -243,10 +243,10 @@ public class StudentService {
                     viewStudentByNumber(box);
                     break;
                 case 3:
-                    deleteStudentByNumber(box);
+                    deleteStudentByNumberUI(box);
                     break;
                 case 4:
-                    listByDepartment(box);
+                    listByFaculty(box);
                     break;
                 case 5:
                     break;
@@ -270,7 +270,7 @@ public class StudentService {
             "Student No.: " + student.getStudentNumber(),
             "Name       : " + student.getName(),
             "Gender     : " + student.getGender(),
-            "Department : " + student.getDepartment(),
+            "Faculty : " + student.getFaculty(),
             "Year       : " + student.getYear(),
             "Email      : " + student.getEmail(),
             "Phone      : " + student.getPhone(),
@@ -328,7 +328,7 @@ public class StudentService {
             "Student No.: " + s.getStudentNumber(),
             "Name       : " + s.getName(),
             "Gender     : " + s.getGender(),
-            "Department : " + s.getDepartment(),
+            "Faculty : " + s.getFaculty(),
             "Year       : " + s.getYear(),
             "Email      : " + s.getEmail(),
             "Phone      : " + s.getPhone(),
@@ -346,7 +346,7 @@ public class StudentService {
      * 
      * @param box The BoxUI instance for clean console interface
      */
-    private void deleteStudentByNumber(BoxUI box) {
+    private void deleteStudentByNumberUI(BoxUI box) {
         String deleteNumber = box.prompt("Enter student number to delete: ");
         if (deleteStudentByNumber(deleteNumber)) {
             box.success("Student deleted.");
@@ -356,26 +356,26 @@ public class StudentService {
     }
 
     /**
-     * Prompts for a department name and lists all students in that department.
+     * Prompts for a faculty name and lists all students in that faculty.
      * 
-     * This method provides filtered student listing by department with
+     * This method provides filtered student listing by faculty with
      * case-insensitive matching. Results are displayed in a numbered list
      * format within a formatted section.
      * 
      * @param box The BoxUI instance for clean console interface
      */
-    private void listByDepartment(BoxUI box) {
-        String department = box.prompt("Enter department: ");
-        CustomArrayList<Student> byDept = getStudentsByDepartment(department);
-        if (byDept.isEmpty()) {
-            box.info("No students found in this department.");
+    private void listByFaculty(BoxUI box) {
+        String faculty = box.prompt("Enter faculty: ");
+        CustomArrayList<Student> byFaculty = getStudentsByFaculty(faculty);
+        if (byFaculty.isEmpty()) {
+            box.info("No students found in this faculty.");
             return;
         }
-        String[] lines = new String[byDept.size()];
-        for (int i = 0; i < byDept.size(); i++) {
-            lines[i] = (i + 1) + ". " + byDept.get(i);
+        String[] lines = new String[byFaculty.size()];
+        for (int i = 0; i < byFaculty.size(); i++) {
+            lines[i] = (i + 1) + ". " + byFaculty.get(i);
         }
-        box.printSection("STUDENTS BY DEPARTMENT", lines);
+        box.printSection("STUDENTS BY FACULTY", lines);
         for (String line : lines) {
             box.line(line);
         }
@@ -396,7 +396,7 @@ public class StudentService {
         box.line("Student No.: " + student.getStudentNumber());
         box.line("Name       : " + student.getName());
         box.line("Gender     : " + student.getGender());
-        box.line("Department : " + student.getDepartment());
+        box.line("Faculty : " + student.getFaculty());
         box.line("Year       : " + student.getYear());
         box.line("Email      : " + student.getEmail());
         box.line("Phone      : " + student.getPhone());

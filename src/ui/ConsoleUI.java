@@ -142,15 +142,25 @@ public class ConsoleUI {
      * This method:
      * - Validates student number uniqueness
      * - Collects all required student information (name, password, demographics, contact info)
-     * - Provides sensible defaults for optional fields (gender, department)
+     * - Provides sensible defaults for optional fields (gender, faculty)
      * - Creates and registers the new student through StudentService
      * - Provides feedback on registration success/failure
      */
     private void registerStudent() {
-        String studentNumber = box.prompt("Student Number: ");
-        if (studentNumber.isEmpty()) {
-            box.error("Student number cannot be empty.");
-            return;
+        String studentNumber;
+        while (true) {
+            studentNumber = box.prompt("Student Number: ");
+            if (studentNumber.isEmpty()) {
+                box.error("Student number cannot be empty.");
+                continue;
+            }
+            // Validate that student number is an integer
+            try {
+                Long.parseLong(studentNumber.trim());
+                break;
+            } catch (NumberFormatException e) {
+                box.error("Student number must be a valid integer. Please try again.");
+            }
         }
         if (studentService.studentExists(studentNumber)) {
             box.error("Student already exists.");
@@ -163,15 +173,15 @@ public class ConsoleUI {
         if (gender.isEmpty()) {
             gender = "Unspecified";
         }
-        String dept = box.prompt("Department: ");
-        if (dept.isEmpty()) {
-            dept = "General";
+        String faculty = box.prompt("Faculty: ");
+        if (faculty.isEmpty()) {
+            faculty = "General";
         }
         int year = box.readInt("Year of study (1–4): ", 1, 4);
         String email = box.prompt("Email: ");
         String phone = box.prompt("Phone: ");
 
-        Student s = new Student(studentNumber, name, password, gender, dept, year, email, phone);
+        Student s = new Student(studentNumber, name, password, gender, faculty, year, email, phone);
         studentService.registerStudent(s);
         box.success("Registration successful. You can log in with your student number.");
     }

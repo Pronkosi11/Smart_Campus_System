@@ -11,7 +11,7 @@ import java.time.LocalDate;
  * 
  * Key Features:
  * - Personal information management (demographics, contact details)
- * - Academic information (department, year of study)
+ * - Academic information (faculty, year of study)
  * - Course enrollment tracking
  * - Library book borrowing management
  * - Hostel room assignment
@@ -30,7 +30,7 @@ public class Student extends User {
 
     // ========== PERSONAL INFORMATION ==========
     private String gender;          // Student's gender (Male/Female/Other/Unspecified)
-    private String department;      // Academic department (e.g., Computer Science, Engineering)
+    private String faculty;      // Academic faculty (e.g., Computer Science, Engineering)
     private int year;              // Year of study (1-4)
     private String email;          // Contact email address
     private String phone;          // Contact phone number
@@ -43,25 +43,28 @@ public class Student extends User {
 
     /**
      * Constructs a new Student with the provided information.
-     * 
+     *
      * This constructor initializes a student with all required personal and academic
      * information. It automatically sets up empty collections for courses and books,
      * sets the registration date to the current date, and leaves hostel room unassigned.
-     * 
-     * @param studentNumber Unique student identifier (used as login username)
+     *
+     * @param studentNumber Unique student identifier (must be a valid integer, used as login username)
      * @param name Full name of the student
      * @param password Login password for authentication
      * @param gender Student's gender (Male/Female/Other/Unspecified)
-     * @param department Academic department the student belongs to
+     * @param faculty Academic faculty the student belongs to
      * @param year Year of study (typically 1-4)
      * @param email Contact email address
      * @param phone Contact phone number
+     * @throws IllegalArgumentException if studentNumber is not a valid integer
      */
-    public Student(String studentNumber, String name, String password, String gender, String department,
+    public Student(String studentNumber, String name, String password, String gender, String faculty,
                    int year, String email, String phone) {
         super(studentNumber, name, password, "STUDENT");
+        validateStudentNumber(studentNumber);
+        validateYear(year);
         this.gender = gender;
-        this.department = department;
+        this.faculty = faculty;
         this.year = year;
         this.email = email;
         this.phone = phone;
@@ -73,16 +76,51 @@ public class Student extends User {
 
     // ========== GETTERS AND SETTERS ==========
     public String getStudentNumber() { return getId(); }
-    public void setStudentNumber(String studentNumber) { setId(studentNumber); }
+    public void setStudentNumber(String studentNumber) {
+        validateStudentNumber(studentNumber);
+        setId(studentNumber);
+    }
+
+    /**
+     * Validates that the student number is a valid integer.
+     *
+     * @param studentNumber The student number to validate
+     * @throws IllegalArgumentException if studentNumber is null, empty, or not a valid integer
+     */
+    private void validateStudentNumber(String studentNumber) {
+        if (studentNumber == null || studentNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Student number cannot be null or empty");
+        }
+        try {
+            Long.parseLong(studentNumber.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Student number must be a valid integer: " + studentNumber);
+        }
+    }
+
+    /**
+     * Validates that the year of study is within the valid range (1-4).
+     *
+     * @param year The year of study to validate
+     * @throws IllegalArgumentException if year is not between 1 and 4
+     */
+    private void validateYear(int year) {
+        if (year < 1 || year > 4) {
+            throw new IllegalArgumentException("Year of study must be between 1 and 4: " + year);
+        }
+    }
 
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
 
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
+    public String getFaculty() { return faculty; }
+    public void setFaculty(String faculty) { this.faculty = faculty; }
 
     public int getYear() { return year; }
-    public void setYear(int year) { this.year = year; }
+    public void setYear(int year) {
+        validateYear(year);
+        this.year = year;
+    }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -165,14 +203,14 @@ public class Student extends User {
      * Returns a formatted string representation of the student for display purposes.
      * 
      * This method provides a concise summary of the student including their
-     * student number, name, gender, department, year, and number of enrolled courses.
+     * student number, name, gender, faculty, year, and number of enrolled courses.
      * Used in lists and summary displays throughout the UI.
      * 
      * @return A formatted string containing key student information
      */
     @Override
     public String toString() {
-        return String.format("Student [Student Number: %s, Name: %s, Gender: %s, Dept: %s, Year: %d, Courses: %d]",
-                getStudentNumber(), name, gender, department, year, enrolledCourses.size());
+        return String.format("Student [Student Number: %s, Name: %s, Gender: %s, Faculty: %s, Year: %d, Courses: %d]",
+                getStudentNumber(), name, gender, faculty, year, enrolledCourses.size());
     }
 }
